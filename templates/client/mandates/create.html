@@ -1,0 +1,94 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Set up debit order{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Set up your debit order</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Enter the bank account you want us to collect your repayments from.
+      We do not store your full account number — only the last 4 digits.
+    </p>
+  </div>
+
+  {% if loan.collection_day %}
+  <div class="rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 p-3 text-sm text-sky-800 dark:text-sky-200">
+    Repayments will be collected on the <strong>{{ loan.collection_day }}th</strong> of each month.
+  </div>
+  {% endif %}
+
+  <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+    {% csrf_token %}
+
+    <div>
+      <label for="account_holder_name" class="block text-sm font-medium">
+        Account holder name
+      </label>
+      <input id="account_holder_name" name="account_holder_name" required maxlength="200"
+             autocomplete="name"
+             class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Must match the name on the bank account exactly.
+      </p>
+    </div>
+
+    <div>
+      <label for="bank_name" class="block text-sm font-medium">Bank</label>
+      <select id="bank_name" name="bank_name" required
+              class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        <option value="">Select your bank…</option>
+        {% for b in banks %}
+        <option value="{{ b }}">{{ b }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="account_number" class="block text-sm font-medium">Account number</label>
+      <input id="account_number" name="account_number" required
+             inputmode="numeric" pattern="[0-9]{6,13}"
+             autocomplete="off"
+             class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        Only the last 4 digits are stored on our system.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label for="branch_code" class="block text-sm font-medium">Branch code</label>
+        <input id="branch_code" name="branch_code"
+               inputmode="numeric" pattern="[0-9]{6}"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+      </div>
+      <div>
+        <label for="account_type" class="block text-sm font-medium">Account type</label>
+        <select id="account_type" name="account_type"
+                class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          <option value="cheque">Cheque / Current</option>
+          <option value="savings">Savings</option>
+          <option value="transmission">Transmission</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 text-xs text-amber-800 dark:text-amber-200">
+      <strong>By continuing</strong> you authorise Wethu Micro Lenders to collect
+      the agreed repayment amounts from this account on the scheduled dates.
+      You will sign a formal mandate on the next screen.
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit"
+              class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+        Continue to sign mandate
+      </button>
+      <a href="/portal/loans/{{ loan.id }}/"
+         class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        Cancel
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

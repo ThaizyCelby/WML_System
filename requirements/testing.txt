@@ -1,0 +1,13 @@
+-r base.txt
+
+# Testing & Security
+pytest
+pytest-django
+pytest-cov
+pytest-benchmark
+pytest-factoryboy
+factory-boy
+bandit
+semgrep
+pip-audit
+safety

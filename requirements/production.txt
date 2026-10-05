@@ -1,0 +1,7 @@
+-r base.txt
+
+# Production
+gunicorn
+uvicorn[standard]
+sentry-sdk[django]
+django-prometheus

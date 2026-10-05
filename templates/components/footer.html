@@ -1,0 +1,43 @@
+<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+    <div class="col-span-2 md:col-span-1">
+      <div class="flex items-center gap-2 font-bold text-brand-900 dark:text-white">
+        {% include "components/logo.html" %}
+        <span>{{ SITE_NAME }}</span>
+      </div>
+      <p class="mt-3 text-slate-600 dark:text-slate-400 max-w-xs">{{ SITE_DESCRIPTION }}</p>
+    </div>
+    <div>
+      <h3 class="font-semibold text-slate-900 dark:text-white mb-3">Products</h3>
+      <ul class="space-y-2 text-slate-600 dark:text-slate-400">
+        <li><a href="/products/" class="hover:text-brand-700 dark:hover:text-brand-300">Loan products</a></li>
+        <li><a href="/affordability/" class="hover:text-brand-700 dark:hover:text-brand-300">Affordability</a></li>
+        <li><a href="/how-it-works/" class="hover:text-brand-700 dark:hover:text-brand-300">How it works</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="font-semibold text-slate-900 dark:text-white mb-3">Company</h3>
+      <ul class="space-y-2 text-slate-600 dark:text-slate-400">
+        <li><a href="/about/" class="hover:text-brand-700 dark:hover:text-brand-300">About us</a></li>
+        <li><a href="/contact/" class="hover:text-brand-700 dark:hover:text-brand-300">Contact</a></li>
+        <li><a href="/faq/" class="hover:text-brand-700 dark:hover:text-brand-300">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="font-semibold text-slate-900 dark:text-white mb-3">Legal</h3>
+      <ul class="space-y-2 text-slate-600 dark:text-slate-400">
+        <li><a href="/security/" class="hover:text-brand-700 dark:hover:text-brand-300">Security</a></li>
+        <li><a href="/privacy/" class="hover:text-brand-700 dark:hover:text-brand-300">Privacy policy</a></li>
+        <li><a href="/terms/" class="hover:text-brand-700 dark:hover:text-brand-300">Terms &amp; conditions</a></li>
+        <li><a href="/responsible-lending/" class="hover:text-brand-700 dark:hover:text-brand-300">Responsible lending</a></li>
+        <li><a href="/accessibility/" class="hover:text-brand-700 dark:hover:text-brand-300">Accessibility</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-slate-200 dark:border-slate-800">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+      <span>&copy; {% now "Y" %} {{ SITE_NAME }}. All rights reserved.</span>
+      <span>Registered credit provider: {{ SITE_COMPANY_REG }}</span>
+    </div>
+  </div>
+</footer>

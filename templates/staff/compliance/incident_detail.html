@@ -1,0 +1,103 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Incident — {{ incident.title }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl space-y-5">
+
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">{{ incident.title }}</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        {{ incident.get_incident_type_display }} · detected {{ incident.detected_at|date:"Y-m-d H:i" }}
+      </p>
+    </div>
+    <a href="{% url 'staff_compliance_incidents' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Back</a>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+    <div class="grid sm:grid-cols-2 gap-4 text-sm">
+      <div><span class="text-slate-500 dark:text-slate-400">Severity:</span> <span class="font-bold">{{ incident.severity|upper }}</span></div>
+      <div><span class="text-slate-500 dark:text-slate-400">Status:</span> {{ incident.get_status_display }}</div>
+      <div><span class="text-slate-500 dark:text-slate-400">Affected records:</span> <span class="font-mono">{{ incident.affected_records_count }}</span></div>
+      <div><span class="text-slate-500 dark:text-slate-400">Assigned:</span> {{ incident.assigned_to.email|default:"Unassigned" }}</div>
+      <div><span class="text-slate-500 dark:text-slate-400">Reported by:</span> {{ incident.reported_by.email|default:"—" }}</div>
+      <div>
+        <span class="text-slate-500 dark:text-slate-400">Notification required:</span>
+        {% if incident.requires_notification %} <span class="text-rose-600 font-semibold">YES</span>{% else %} No{% endif %}
+      </div>
+    </div>
+
+    <div>
+      <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Description</div>
+      <div class="rounded-lg bg-slate-50 dark:bg-slate-950/50 p-3 text-sm whitespace-pre-wrap">{{ incident.description }}</div>
+    </div>
+
+    {% if incident.root_cause or incident.remediation %}
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% if incident.root_cause %}
+          <div>
+            <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Root cause</div>
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-950/50 p-3 text-sm whitespace-pre-wrap">{{ incident.root_cause }}</div>
+          </div>
+        {% endif %}
+        {% if incident.remediation %}
+          <div>
+            <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Remediation</div>
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-950/50 p-3 text-sm whitespace-pre-wrap">{{ incident.remediation }}</div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Notification actions #}
+  {% if incident.requires_notification %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3">
+      <h3 class="text-sm font-semibold text-brand-950 dark:text-white">POPIA §22 notifications</h3>
+      <div class="flex flex-wrap gap-3">
+        {% if not incident.regulator_notified_at %}
+          <form method="post" action="{% url 'staff_compliance_incident_action' incident.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="notify_regulator">
+            <button type="submit" class="rounded-lg bg-rose-700 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-800">Notify Information Regulator</button>
+          </form>
+        {% else %}
+          <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">Regulator notified {{ incident.regulator_notified_at|date:"Y-m-d" }}</span>
+        {% endif %}
+
+        {% if not incident.subjects_notified_at %}
+          <form method="post" action="{% url 'staff_compliance_incident_action' incident.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="notify_subjects">
+            <button type="submit" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Notify affected subjects</button>
+          </form>
+        {% else %}
+          <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">Subjects notified {{ incident.subjects_notified_at|date:"Y-m-d" }}</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# Actions #}
+  {% if incident.status not in 'resolved,closed' %}
+    <div class="grid sm:grid-cols-2 gap-4">
+      {% if not incident.assigned_to %}
+        <form method="post" action="{% url 'staff_compliance_incident_action' incident.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="assign">
+          <button type="submit" class="w-full rounded-lg bg-brand-900 text-white py-2.5 text-sm font-semibold hover:bg-brand-800">Assign to me</button>
+        </form>
+      {% endif %}
+
+      <form method="post" action="{% url 'staff_compliance_incident_action' incident.id %}" class="sm:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="resolve">
+        <h3 class="text-sm font-semibold text-brand-950 dark:text-white">Resolve incident</h3>
+        <textarea name="root_cause" rows="2" placeholder="Root cause" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+        <textarea name="remediation" rows="2" placeholder="Remediation actions taken" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+        <button type="submit" class="rounded-lg bg-emerald-700 text-white px-4 py-2 text-sm font-semibold hover:bg-emerald-800">Mark resolved</button>
+      </form>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

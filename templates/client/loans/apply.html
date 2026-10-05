@@ -1,0 +1,142 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Apply for a loan{% endblock %}
+{% block content %}
+
+{% if not can_apply %}
+  <div class="max-w-2xl space-y-6">
+    <div class="rounded-xl border-2 border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-6">
+      <div class="flex items-start gap-3">
+        <svg class="h-6 w-6 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+          <h2 class="font-semibold text-amber-900 dark:text-amber-100">Complete your documents first</h2>
+          <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
+            Before applying for a loan, please upload the following documents so we can verify your identity and affordability.
+          </p>
+        </div>
+      </div>
+
+      <ul class="mt-5 space-y-2">
+        {% for doc in missing_documents %}
+        <li class="flex items-center gap-3 text-sm">
+          <svg class="h-5 w-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-amber-900 dark:text-amber-100">{{ doc.label }}</span>
+          <a href="{% url 'client_document_upload' %}?type={{ doc.code }}" class="ml-auto text-brand-700 dark:text-brand-300 hover:underline font-semibold">Upload</a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="mt-6 flex gap-3">
+        <a href="{% url 'client_document_upload' %}" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Upload documents</a>
+        <a href="{% url 'client_loan_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Back to loans</a>
+      </div>
+    </div>
+  </div>
+{% else %}
+
+<div x-data="{ step: 1, product: '', amount: 5000, term: 12 }" class="max-w-3xl">
+  <div class="mb-6">
+    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+      <span :class="step >= 1 ? 'text-brand-700 dark:text-brand-300 font-semibold' : ''">1. Product</span>
+      <span>·</span>
+      <span :class="step >= 2 ? 'text-brand-700 dark:text-brand-300 font-semibold' : ''">2. Amount &amp; term</span>
+      <span>·</span>
+      <span :class="step >= 3 ? 'text-brand-700 dark:text-brand-300 font-semibold' : ''">3. Preview</span>
+    </div>
+  </div>
+
+  <form method="post" action="{% url 'client_loan_apply_submit' %}" class="space-y-6">
+    {% csrf_token %}
+    <input type="hidden" name="product_id" x-model="product">
+    <input type="hidden" name="amount" x-model="amount">
+    <input type="hidden" name="term" x-model="term">
+
+    <!-- Step 1 — Product -->
+    <div x-show="step === 1" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h2 class="text-lg font-semibold text-brand-950 dark:text-white">Choose a loan product</h2>
+      <div class="mt-5 grid sm:grid-cols-2 gap-4">
+        {% for p in products %}
+        <label class="block cursor-pointer">
+          <input type="radio" name="_product" value="{{ p.id }}" class="peer sr-only" @change="product = '{{ p.id }}'">
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 peer-checked:border-brand-600 peer-checked:ring-2 peer-checked:ring-brand-200 dark:peer-checked:ring-brand-900">
+            <div class="font-semibold text-brand-950 dark:text-white">{{ p.name }}</div>
+            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              R {{ p.min_amount|floatformat:0 }} – R {{ p.max_amount|floatformat:0 }} · {{ p.min_term }}–{{ p.max_term }} months
+            </div>
+            <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Interest {{ p.interest_rate }}% · {{ p.get_repayment_frequency_display }}
+            </div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button type="button" :disabled="!product" @click="step = 2"
+                class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed">
+          Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2 — Amount, term, payday -->
+    <div x-show="step === 2" x-cloak class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+      <h2 class="text-lg font-semibold text-brand-950 dark:text-white">Amount &amp; term</h2>
+
+      <div>
+        <label class="block text-sm font-medium">Requested amount (R)</label>
+        <input type="number" min="1000" x-model.number="amount"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Term (months)</label>
+        <input type="number" min="1" x-model.number="term"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Your payday (day of month)</label>
+        <input type="number" name="client_payday" min="1" max="31"
+               placeholder="e.g. 25"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          We'll try to schedule repayments around this date.
+        </p>
+      </div>
+
+      <div class="flex justify-between">
+        <button type="button" @click="step = 1"
+                class="text-sm text-slate-600 dark:text-slate-400 hover:underline">
+          Back
+        </button>
+        <button type="button" @click="step = 3"
+                class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+          Preview
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3 — Preview -->
+    <div x-show="step === 3" x-cloak
+         x-init="$watch('step', v => { if (v === 3) { htmx.ajax('POST', '{% url 'client_loan_apply' %}preview/', { target: '#preview', values: { product_id: product, amount: amount, term: term, csrfmiddlewaretoken: '{{ csrf_token }}' } }) } })">
+      <div id="preview"></div>
+      <div class="mt-4 flex justify-between">
+        <button type="button" @click="step = 2"
+                class="text-sm text-slate-600 dark:text-slate-400 hover:underline">
+          Back
+        </button>
+        <button type="submit"
+                class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+          Submit application
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+{% endif %}
+{% endblock %}

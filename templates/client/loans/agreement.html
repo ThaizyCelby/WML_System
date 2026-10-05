@@ -1,0 +1,38 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Loan agreement{% endblock %}
+{% block content %}
+<div class="max-w-3xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Loan agreement</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Version {{ agreement.version }} · Generated {{ agreement.generated_at|date:"Y-m-d H:i" }}</p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Status</span><span class="font-medium">{{ agreement.get_status_display }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Principal</span><span class="font-mono">R {{ loan.principal_amount|floatformat:2 }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Interest rate</span><span class="font-mono">{{ loan.interest_rate }}%</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Total interest</span><span class="font-mono">R {{ loan.total_interest|floatformat:2 }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Fees</span><span class="font-mono">R {{ loan.fees_total|floatformat:2 }}</span></div>
+    <div class="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-3"><span class="font-semibold">Total repayable</span><span class="font-mono font-semibold">R {{ loan.principal_amount|add:loan.total_interest|add:loan.fees_total|floatformat:2 }}</span></div>
+    <p class="text-xs text-slate-400">SHA-256: <span class="font-mono">{{ agreement.agreement_hash|slice:":32" }}…</span></p>
+  </div>
+
+  <div class="flex gap-3 flex-wrap">
+    <a href="{% url 'client_loan_list' %}{{ loan.id }}/agreement/download/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Download PDF</a>
+    {% if agreement.status != 'accepted' %}
+    <form method="post" action="{% url 'client_loan_list' %}{{ loan.id }}/agreement/accept/" class="flex items-start gap-3 flex-col sm:flex-row sm:items-center">
+      {% csrf_token %}
+      <label class="flex items-center gap-3 text-sm">
+        <input type="checkbox" name="i_accept" value="1" required class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        I have read and accept the agreement.
+      </label>
+      <button type="submit" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Accept agreement</button>
+    </form>
+    {% else %}
+    <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-3 py-1 text-xs font-medium">Accepted on {{ agreement.accepted_at|date:"Y-m-d H:i" }}</span>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

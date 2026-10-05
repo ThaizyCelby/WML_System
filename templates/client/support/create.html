@@ -1,0 +1,73 @@
+{% extends "base_portal.html" %}
+{% block page_title %}New support ticket{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">New support ticket</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Describe your issue clearly. We'll respond within the SLA window for the priority you choose.
+    </p>
+  </div>
+
+  <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+    {% csrf_token %}
+
+    {% if loan %}
+      <div class="rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 p-3 text-sm text-sky-800 dark:text-sky-200">
+        This ticket will be linked to your loan <strong>{{ loan.id|slice:":8" }}</strong>.
+      </div>
+    {% elif application %}
+      <div class="rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 p-3 text-sm text-sky-800 dark:text-sky-200">
+        This ticket will be linked to your application <strong>{{ application.id|slice:":8" }}</strong>.
+      </div>
+    {% endif %}
+
+    <div>
+      <label for="subject" class="block text-sm font-medium">Subject</label>
+      <input id="subject" name="subject" required maxlength="200"
+             class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label for="category" class="block text-sm font-medium">Category</label>
+        <select id="category" name="category" required
+                class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          {% for value, label in categories %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="priority" class="block text-sm font-medium">Priority</label>
+        <select id="priority" name="priority" required
+                class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          {% for value, label in priorities %}
+            <option value="{{ value }}" {% if value == 'normal' %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label for="body" class="block text-sm font-medium">Message</label>
+      <textarea id="body" name="body" rows="6" required maxlength="5000"
+                class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950"></textarea>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Please don't include your ID number, card number, or password.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit"
+              class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+        Create ticket
+      </button>
+      <a href="{% url 'client_support_list' %}"
+         class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        Cancel
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

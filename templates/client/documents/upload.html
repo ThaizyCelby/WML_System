@@ -1,0 +1,96 @@
+{% extends "base_portal.html" %}
+{% block page_title %}{% if replacing %}Replace document{% else %}Upload document{% endif %}{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">
+      {% if replacing %}Replace "{{ replacing.original_filename }}"{% else %}Upload a document{% endif %}
+    </h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      {% if replacing %}
+        Uploading a new file will replace the current version. The previous version is preserved for audit.
+      {% else %}
+        Files are encrypted at rest and never publicly accessible.
+      {% endif %}
+    </p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-5" x-data="uploadForm()" @submit="uploading = true">
+    {% csrf_token %}
+
+    <div>
+      <label for="document_type" class="block text-sm font-medium">Document type</label>
+      <select id="document_type" name="document_type" required
+              {% if replacing %}disabled{% endif %}
+              class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        <option value="">Select a type…</option>
+        {% for value, label in document_types %}
+          <option value="{{ value }}"
+            {% if replacing and replacing.document_type == value %}selected{% endif %}
+            {% if preset_type == value and not replacing %}selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+      {% if replacing %}
+        <input type="hidden" name="document_type" value="{{ replacing.document_type }}">
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">File</label>
+      <div class="mt-1 flex justify-center rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 px-6 py-10"
+           @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false" @drop.prevent="handleDrop($event)"
+           :class="dragOver ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20' : ''">
+        <div class="text-center">
+          <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <div class="mt-4 text-sm text-slate-600 dark:text-slate-300">
+            <label for="file" class="cursor-pointer rounded-md font-semibold text-brand-700 dark:text-brand-300 hover:underline">
+              <span>Choose a file</span>
+              <input id="file" name="file" type="file" required class="sr-only" @change="handleSelect($event)"
+                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            </label>
+            <span> or drag &amp; drop</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">PDF, JPEG, PNG, DOCX · Max 10 MB</p>
+          <p x-show="fileName" x-cloak class="mt-3 text-sm font-medium text-brand-700 dark:text-brand-300" x-text="fileName"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" :disabled="uploading"
+              class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-60">
+        <span x-show="!uploading">{% if replacing %}Replace{% else %}Upload{% endif %}</span>
+        <span x-show="uploading" x-cloak>Uploading…</span>
+      </button>
+      <a href="{% url 'client_document_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function uploadForm() {
+  return {
+    dragOver: false,
+    uploading: false,
+    fileName: '',
+    handleSelect(e) { this.fileName = e.target.files[0]?.name || ''; },
+    handleDrop(e) {
+      this.dragOver = false;
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const input = document.getElementById('file');
+      const dt = new DataTransfer(); dt.items.add(file);
+      input.files = dt.files;
+      this.fileName = file.name;
+    }
+  }
+}
+</script>
+{% endblock %}

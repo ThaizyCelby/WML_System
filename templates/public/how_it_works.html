@@ -1,0 +1,20 @@
+{% extends "base_public.html" %}
+{% block title %}How it works — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-16">
+  <h1 class="text-4xl font-extrabold text-brand-950 dark:text-white">How it works</h1>
+  <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">From application to repayment, in five transparent steps.</p>
+
+  <div class="mt-10 space-y-6">
+    {% for step in steps %}
+    <div class="flex gap-4">
+      <div class="w-10 h-10 rounded-lg bg-brand-900 text-white flex items-center justify-center font-bold">{{ forloop.counter }}</div>
+      <div>
+        <h3 class="font-semibold text-brand-950 dark:text-white">{{ step.title }}</h3>
+        <p class="text-slate-600 dark:text-slate-300 mt-1">{{ step.body }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

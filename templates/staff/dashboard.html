@@ -1,0 +1,127 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- KPI row -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">In review</p>
+      <p class="mt-2 text-3xl font-bold text-brand-950 dark:text-white">{{ in_review }}</p>
+      <a href="{% url 'staff_applications_list' %}?status=submitted" class="text-xs text-brand-700 dark:text-brand-300 hover:underline mt-1 inline-block">View queue →</a>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Active loans</p>
+      <p class="mt-2 text-3xl font-bold text-brand-950 dark:text-white">{{ active_loans }}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ overdue_loans }} overdue</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total outstanding</p>
+      <p class="mt-2 text-2xl font-bold font-mono text-brand-950 dark:text-white">R {{ outstanding|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border-2 {% if fraud_open %}border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/20{% else %}border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900{% endif %} p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Open fraud alerts</p>
+      <p class="mt-2 text-3xl font-bold {% if fraud_open %}text-rose-700 dark:text-rose-300{% else %}text-brand-950 dark:text-white{% endif %}">{{ fraud_open }}</p>
+      <a href="{% url 'staff_fraud_list' %}" class="text-xs {% if fraud_open %}text-rose-700 dark:text-rose-300{% else %}text-brand-700 dark:text-brand-300{% endif %} hover:underline mt-1 inline-block">Triage →</a>
+    </div>
+  </div>
+
+  <!-- Quick action row -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <a href="{% url 'staff_documents_list' %}?status=submitted" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-brand-300 dark:hover:border-brand-800">
+      <p class="text-sm font-semibold">Documents to review</p>
+      <p class="mt-1 text-2xl font-bold text-brand-900 dark:text-brand-100">{{ docs_pending }}</p>
+    </a>
+    <a href="{% url 'staff_mandate_list' %}" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-brand-300 dark:hover:border-brand-800">
+      <p class="text-sm font-semibold">Mandates pending</p>
+      <p class="mt-1 text-2xl font-bold text-brand-900 dark:text-brand-100">{{ mandates_pending }}</p>
+    </a>
+    <a href="{% url 'staff_collections' %}" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-brand-300 dark:hover:border-brand-800">
+      <p class="text-sm font-semibold">Overdue loans</p>
+      <p class="mt-1 text-2xl font-bold text-rose-600">{{ overdue_loans }}</p>
+    </a>
+    <a href="{% url 'staff_reconciliation' %}" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-brand-300 dark:hover:border-brand-800">
+      <p class="text-sm font-semibold">Recon. exceptions (30d)</p>
+      <p class="mt-1 text-2xl font-bold text-amber-600">{{ recon_issues }}</p>
+    </a>
+  </div>
+
+  <!-- Chart: applications per day -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Applications — last 14 days</h2>
+    <div class="chart-container" style="height:240px;">
+      <canvas id="appsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent applications -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Recent applications</h2>
+      <a href="{% url 'staff_applications_list' %}" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">View all →</a>
+    </div>
+    {% if recent_apps %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-5 py-3">Client</th>
+            <th class="px-5 py-3">Product</th>
+            <th class="px-5 py-3 text-right">Amount</th>
+            <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3">Submitted</th>
+            <th class="px-5 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for a in recent_apps %}
+          <tr>
+            <td class="px-5 py-3">{{ a.client.email }}</td>
+            <td class="px-5 py-3">{{ a.product.name|default:"—" }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ a.requested_amount|floatformat:2 }}</td>
+            <td class="px-5 py-3">{{ a.get_status_display }}</td>
+            <td class="px-5 py-3 font-mono text-xs">{{ a.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="px-5 py-3">
+              <a href="{% url 'staff_applications_list' %}{{ a.id }}/" class="text-brand-700 dark:text-brand-300 hover:underline">Review</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">No recent applications.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block staff_js %}
+<script>
+  const ctx = document.getElementById('appsChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ app_labels|safe }},
+        datasets: [{
+          label: 'Applications',
+          data: {{ app_values|safe }},
+          borderColor: '#1c78f5',
+          backgroundColor: 'rgba(28,120,245,0.1)',
+          fill: true,
+          tension: 0.3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      }
+    });
+  }
+</script>
+{% endblock %}

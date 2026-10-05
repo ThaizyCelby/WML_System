@@ -1,0 +1,50 @@
+{# Partial: collection window card. Include from staff/loans/detail.html as:  #}
+{# {% include "staff/loans/_collection_window.html" with loan=loan %}         #}
+
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Collection window</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        Days of the month the system may attempt collection.
+      </p>
+    </div>
+    {% if loan.collection_window_start %}
+      <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 px-2.5 py-0.5 text-xs font-medium">
+        Day {{ loan.collection_window_start }} – {{ loan.collection_window_end }}
+      </span>
+    {% else %}
+      <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-0.5 text-xs font-medium">
+        Not set
+      </span>
+    {% endif %}
+  </div>
+
+  <form method="post" action="/staff/loans/{{ loan.id }}/collection-window/" class="space-y-4">
+    {% csrf_token %}
+    <div class="grid grid-cols-3 gap-3">
+      <div>
+        <label class="block text-xs font-medium">From (day)</label>
+        <input type="number" name="collection_window_start" min="1" max="31" required
+               value="{{ loan.collection_window_start|default:loan.collection_day|default:1 }}"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-medium">To (day)</label>
+        <input type="number" name="collection_window_end" min="1" max="31" required
+               value="{{ loan.collection_window_end|default:loan.collection_day|default:1 }}"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-medium">Max retries</label>
+        <input type="number" name="max_retry_attempts" min="0" max="10" required
+               value="{{ loan.max_retry_attempts|default:3 }}"
+               class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      </div>
+    </div>
+    <button type="submit"
+            class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
+      Save collection window
+    </button>
+  </form>
+</div>

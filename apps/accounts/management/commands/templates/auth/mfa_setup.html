@@ -1,0 +1,67 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Set up two-factor authentication{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">
+      Two-factor authentication
+    </h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Add a second factor to your account. You'll need an authenticator app
+      like Google Authenticator, Microsoft Authenticator, or 1Password.
+    </p>
+  </div>
+
+  {% if already_enabled %}
+    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-5">
+      <p class="text-sm text-emerald-800 dark:text-emerald-200">
+        Two-factor authentication is already enabled on your account.
+      </p>
+    </div>
+    <form method="post" action="{% url 'mfa_disable' %}" class="rounded-xl border border-rose-200 dark:border-rose-900/40 bg-white dark:bg-slate-900 p-6 space-y-3">
+      {% csrf_token %}
+      <h2 class="text-sm font-semibold text-rose-700 dark:text-rose-300">Disable MFA</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Enter your password to confirm.</p>
+      <input type="password" name="password" required
+             class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <button type="submit" class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+        Disable MFA
+      </button>
+    </form>
+
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+      <div>
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Step 1 — Scan the QR code</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Open your authenticator app and scan this code.</p>
+      </div>
+
+      <div class="flex justify-center py-3">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ provisioning_uri|urlencode }}"
+             alt="MFA QR code" class="rounded-lg border border-slate-200 dark:border-slate-800">
+      </div>
+
+      <div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Can't scan? Enter this code manually:</p>
+        <p class="font-mono text-sm bg-slate-100 dark:bg-slate-800 rounded px-3 py-2 select-all">{{ secret }}</p>
+      </div>
+    </div>
+
+    <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Step 2 — Verify</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Enter the 6-digit code from your app.</p>
+      </div>
+      <input type="text" name="code" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+             autocomplete="one-time-code" autofocus
+             class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-2xl font-mono tracking-widest text-center py-3">
+      <button type="submit" class="w-full rounded-lg bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-800">
+        Enable MFA
+      </button>
+    </form>
+  {% endif %}
+
+</div>
+{% endblock %}

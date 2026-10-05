@@ -1,0 +1,27 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Verify your identity{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto space-y-6 py-12">
+
+  <div class="text-center">
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Two-factor verification</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Enter the 6-digit code from your authenticator app.
+    </p>
+  </div>
+
+  <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+    {% csrf_token %}
+    <input type="text" name="code" required autocomplete="one-time-code" autofocus
+           placeholder="123456 or xxxx-xxxx-xxxx"
+           class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-xl font-mono tracking-widest text-center py-3">
+    <p class="text-xs text-slate-500 dark:text-slate-400 text-center">
+      Lost your device? Enter one of your recovery codes.
+    </p>
+    <button type="submit" class="w-full rounded-lg bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-800">
+      Verify
+    </button>
+  </form>
+
+</div>
+{% endblock %}

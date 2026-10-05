@@ -1,0 +1,80 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Reconciliation{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div class="grid sm:grid-cols-4 gap-4">
+    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-5">
+      <p class="text-xs uppercase text-emerald-700 dark:text-emerald-300">Matched</p>
+      <p class="mt-2 text-2xl font-bold text-emerald-800 dark:text-emerald-200">{{ summary.matched }}</p>
+    </div>
+    <div class="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-5">
+      <p class="text-xs uppercase text-amber-700 dark:text-amber-300">Partial</p>
+      <p class="mt-2 text-2xl font-bold text-amber-800 dark:text-amber-200">{{ summary.partial }}</p>
+    </div>
+    <div class="rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/20 p-5">
+      <p class="text-xs uppercase text-rose-700 dark:text-rose-300">Missing</p>
+      <p class="mt-2 text-2xl font-bold text-rose-800 dark:text-rose-200">{{ summary.missing }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs uppercase text-slate-500">Unmatched</p>
+      <p class="mt-2 text-2xl font-bold">{{ summary.unmatched }}</p>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <form method="get" class="grid sm:grid-cols-4 gap-3">
+      <select name="status" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        <option value="">All statuses</option>
+        <option value="matched" {% if status_filter == 'matched' %}selected{% endif %}>Matched</option>
+        <option value="partial" {% if status_filter == 'partial' %}selected{% endif %}>Partial</option>
+        <option value="missing" {% if status_filter == 'missing' %}selected{% endif %}>Missing</option>
+        <option value="unmatched" {% if status_filter == 'unmatched' %}selected{% endif %}>Unmatched</option>
+      </select>
+      <input type="date" name="from" value="{{ date_from }}" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <input type="date" name="to" value="{{ date_to }}" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <button class="rounded-lg bg-brand-900 text-white text-sm font-semibold hover:bg-brand-800">Filter</button>
+    </form>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-5 py-3">Loan</th>
+            <th class="px-5 py-3">Client</th>
+            <th class="px-5 py-3 text-right">Expected</th>
+            <th class="px-5 py-3 text-right">Actual</th>
+            <th class="px-5 py-3 text-right">Difference</th>
+            <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3">When</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for r in page %}
+          <tr>
+            <td class="px-5 py-3 font-mono text-xs">
+              {% if r.loan_id %}
+                <a href="{% url 'staff_loan_detail' r.loan_id %}" class="text-brand-700 dark:text-brand-300 hover:underline">{{ r.loan_id|slice:":8" }}</a>
+              {% else %}
+                <span class="text-slate-400">—</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3">{{ r.loan.client.email }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ r.expected_amount|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ r.actual_amount|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono {% if r.difference != 0 %}text-rose-600{% endif %}">R {{ r.difference|floatformat:2 }}</td>
+            <td class="px-5 py-3">{{ r.get_status_display }}</td>
+            <td class="px-5 py-3 font-mono text-xs">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-500">No records.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

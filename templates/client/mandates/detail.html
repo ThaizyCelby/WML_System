@@ -1,0 +1,42 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Debit mandate{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Debit mandate</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Reference: <span class="font-mono">{{ mandate.mandate_reference_number|default:"—" }}</span>
+    </p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Status</span>
+      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+        {% if mandate.status == 'active' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+        {% elif mandate.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+        {% else %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300{% endif %}">
+        {{ mandate.get_status_display }}
+      </span>
+    </div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account holder</span><span>{{ mandate.account_holder_name }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Bank</span><span>{{ mandate.bank_name }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account</span><span class="font-mono">****{{ mandate.account_number_last4 }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Signed at</span><span>{{ mandate.mandate_signed_at|date:"Y-m-d H:i"|default:"—" }}</span></div>
+
+    {% if mandate.status == 'rejected' and mandate.rejection_reason %}
+      <div class="mt-4 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 p-3 text-rose-800 dark:text-rose-200">
+        <strong>Rejected:</strong> {{ mandate.rejection_reason }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="flex gap-3">
+    {% if mandate.mandate_pdf_storage_key %}
+      <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/download/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Download signed mandate</a>
+    {% endif %}
+    {% if mandate.status == 'pending_client' %}
+      <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/sign/" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Sign mandate</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

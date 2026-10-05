@@ -1,0 +1,48 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Audit log{% endblock %}
+{% block content %}
+<div class="space-y-4">
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <form method="get" class="grid sm:grid-cols-4 gap-3">
+      <input type="text" name="action" value="{{ action_filter }}" placeholder="Action contains…" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <input type="text" name="actor" value="{{ actor_filter }}" placeholder="Actor email" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <input type="date" name="from" value="{{ date_from }}" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <input type="date" name="to" value="{{ date_to }}" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      <div class="sm:col-span-4"><button class="rounded-lg bg-brand-900 text-white text-sm font-semibold px-4 py-2 hover:bg-brand-800">Filter</button></div>
+    </form>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-4 py-3">Timestamp</th>
+            <th class="px-4 py-3">Actor</th>
+            <th class="px-4 py-3">Action</th>
+            <th class="px-4 py-3">Object</th>
+            <th class="px-4 py-3">IP</th>
+            <th class="px-4 py-3">Correlation</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for log in page %}
+          <tr>
+            <td class="px-4 py-2 font-mono">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td class="px-4 py-2">{{ log.actor_email|default:"—" }}</td>
+            <td class="px-4 py-2 font-medium">{{ log.action }}</td>
+            <td class="px-4 py-2 font-mono">{{ log.object_type }}{% if log.object_id %}:{{ log.object_id|slice:":8" }}{% endif %}</td>
+            <td class="px-4 py-2 font-mono">{{ log.ip_address|default:"—" }}</td>
+            <td class="px-4 py-2 font-mono">{{ log.correlation_id|slice:":12" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No audit entries.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

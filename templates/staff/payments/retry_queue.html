@@ -1,0 +1,136 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Retry queue{% endblock %}
+{% block content %}
+
+<div class="space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Debit retry queue</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Failed debits awaiting retry. Undisputable retries use the client's irrevocable
+      mandate authority — only use when the loan agreement permits it.
+    </p>
+  </div>
+
+  <!-- Scheduled retries -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Scheduled retries</h2>
+    </div>
+    {% if scheduled %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <tr>
+              <th class="px-5 py-3">Loan</th>
+              <th class="px-5 py-3">Client</th>
+              <th class="px-5 py-3">Amount</th>
+              <th class="px-5 py-3">Attempt</th>
+              <th class="px-5 py-3">Retry at</th>
+              <th class="px-5 py-3">Type</th>
+              <th class="px-5 py-3">Scheduled by</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for t in scheduled %}
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs">{{ t.loan_id|slice:":8" }}</td>
+              <td class="px-5 py-3">{{ t.loan.client.email }}</td>
+              <td class="px-5 py-3 font-mono">R {{ t.amount|floatformat:2 }}</td>
+              <td class="px-5 py-3">#{{ t.attempt_number }}</td>
+              <td class="px-5 py-3 font-mono text-xs">{{ t.next_retry_at|date:"Y-m-d H:i" }}</td>
+              <td class="px-5 py-3">
+                {% if t.is_undisputable %}
+                  <span class="inline-flex items-center rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 px-2 py-0.5 text-[10px] font-bold">UNDISPUTABLE</span>
+                {% else %}
+                  <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 text-[10px] font-medium">STANDARD</span>
+                {% endif %}
+              </td>
+              <td class="px-5 py-3 text-xs">{{ t.retry_scheduled_by.email|default:"—" }}</td>
+              <td class="px-5 py-3 text-right">
+                <form method="post" action="/staff/payments/{{ t.id }}/retry/cancel/" class="inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="reason" value="Cancelled from queue">
+                  <button type="submit" class="text-xs text-rose-600 hover:underline">Cancel</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        No retries scheduled.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Awaiting retry decision -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Failed — awaiting decision</h2>
+    </div>
+    {% if awaiting %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <tr>
+              <th class="px-5 py-3">Loan</th>
+              <th class="px-5 py-3">Client</th>
+              <th class="px-5 py-3">Amount</th>
+              <th class="px-5 py-3">Failed at</th>
+              <th class="px-5 py-3">Reason</th>
+              <th class="px-5 py-3 text-right">Schedule retry</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for t in awaiting %}
+            <tr>
+              <td class="px-5 py-3 font-mono text-xs">{{ t.loan_id|slice:":8" }}</td>
+              <td class="px-5 py-3">{{ t.loan.client.email }}</td>
+              <td class="px-5 py-3 font-mono">R {{ t.amount|floatformat:2 }}</td>
+              <td class="px-5 py-3 font-mono text-xs">{{ t.updated_at|date:"Y-m-d H:i" }}</td>
+              <td class="px-5 py-3 text-xs">{{ t.decline_reason|default:t.error_message|truncatechars:60|default:"—" }}</td>
+              <td class="px-5 py-3 text-right">
+                <form method="post" action="/staff/payments/{{ t.id }}/retry/"
+                      class="inline-flex items-center gap-2" x-data="{ show: false }">
+                  {% csrf_token %}
+                  <input type="date" name="retry_at" required
+                         class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-xs px-2 py-1"
+                         min="{{ today|date:'Y-m-d' }}">
+                  <label class="inline-flex items-center gap-1 text-xs">
+                    <input type="checkbox" name="undisputable" checked
+                           class="rounded border-slate-300 text-rose-600">
+                    Undisputable
+                  </label>
+                  <input type="text" name="reason" placeholder="Reason"
+                         class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-xs px-2 py-1 w-32">
+                  <button type="submit"
+                          class="rounded-lg bg-brand-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-800">
+                    Schedule
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        No failed debits awaiting decision.
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="rounded-xl border-2 border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-4 text-xs text-amber-800 dark:text-amber-200">
+    <strong>Legal note:</strong> An undisputable retry exercises the client's irrevocable
+    mandate authority. Only use when the loan agreement contains the relevant clause,
+    the mandate is active, and the client has been notified of the original decline.
+    All retries are logged to the audit trail.
+  </div>
+
+</div>
+{% endblock %}

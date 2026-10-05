@@ -1,0 +1,13 @@
+{% if messages %}
+  <div class="mb-4 space-y-2">
+    {% for m in messages %}
+      <div class="rounded-lg border px-4 py-3 text-sm
+        {% if m.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200
+        {% elif m.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200
+        {% elif m.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200
+        {% else %}border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200{% endif %}">
+        {{ m }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

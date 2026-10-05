@@ -1,0 +1,272 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Documents{% endblock %}
+{% block content %}
+<div class="space-y-5">
+
+  {# ─── Header ─────────────────────────────────────────────── #}
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">Document review</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        {{ total_clients }} client{{ total_clients|pluralize }} ·
+        {{ total_documents }} document{{ total_documents|pluralize }}
+      </p>
+    </div>
+  </div>
+
+  {# ─── Filters ─────────────────────────────────────────────── #}
+  <form method="get" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <div class="grid sm:grid-cols-12 gap-3">
+      <div class="sm:col-span-5">
+        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Search client</label>
+        <input type="search" name="q" value="{{ search }}"
+               placeholder="Name, email, phone, or ID number…"
+               class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+      </div>
+      <div class="sm:col-span-3">
+        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Status</label>
+        <select name="status" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+          <option value="">All statuses</option>
+          {% for value, label in statuses %}
+            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="sm:col-span-2 flex items-end">
+        <label class="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" name="only_missing" value="1"
+                 {% if only_missing %}checked{% endif %}
+                 class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+          Missing details only
+        </label>
+      </div>
+      <div class="sm:col-span-2 flex items-end gap-2">
+        <button type="submit"
+                class="w-full rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
+          Apply
+        </button>
+        <a href="{% url 'staff_documents_list' %}"
+           class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+          Clear
+        </a>
+      </div>
+    </div>
+  </form>
+
+  {# ─── Pending replacements alert ──────────────────────────── #}
+  {% if pending_replacements %}
+    <div class="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-4">
+      <div class="flex items-start gap-3">
+        <svg class="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-amber-900 dark:text-amber-100">
+            {{ pending_replacements|length }} pending replacement request{{ pending_replacements|length|pluralize }}
+          </p>
+          <ul class="mt-2 space-y-1 text-xs text-amber-800 dark:text-amber-200">
+            {% for r in pending_replacements %}
+              <li>
+                {{ r.document.client.email }} — {{ r.document.original_filename }} ·
+                <a href="/staff/replacements/{{ r.id }}/review/" class="underline font-semibold">Review</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {# ─── Grouped client list ─────────────────────────────────── #}
+  {% if page.object_list %}
+    <div class="space-y-4">
+      {% for group in page.object_list %}
+        {% with client=group.client profile=group.profile missing=group.missing %}
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+
+            {# ── Client header ───────────────────────────────── #}
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-4 flex-wrap">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <h2 class="text-base font-semibold text-brand-950 dark:text-white truncate">
+                    {{ client.full_name|default:client.email }}
+                  </h2>
+                  {% if profile %}
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold
+                      {% if profile.kyc_status == 'verified' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+                      {% elif profile.kyc_status == 'failed' or profile.kyc_status == 'suspended' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                      {% elif profile.kyc_status == 'under_review' or profile.kyc_status == 'submitted' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+                      {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+                      KYC {{ profile.get_kyc_status_display|upper }}
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+                      NO PROFILE
+                    </span>
+                  {% endif %}
+                  {% if missing %}
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300">
+                      {{ missing|length }} MISSING
+                    </span>
+                  {% endif %}
+                </div>
+                <div class="mt-1 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-3 gap-y-1">
+                  <span class="font-mono">{{ client.email }}</span>
+                  {% if client.phone_number %}<span>{{ client.phone_number }}</span>{% endif %}
+                  {% if profile and profile.id_number %}<span class="font-mono">ID {{ profile.id_number }}</span>{% endif %}
+                </div>
+              </div>
+              <a href="/staff/applications/?q={{ client.email|urlencode }}"
+                 class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline whitespace-nowrap">
+                Open applications →
+              </a>
+            </div>
+
+            {# ── Missing profile details warning ──────────────── #}
+            {% if missing %}
+              <div class="px-5 py-3 bg-orange-50 dark:bg-orange-950/20 border-b border-orange-100 dark:border-orange-900/30">
+                <div class="flex items-start gap-2">
+                  <svg class="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                  <div class="flex-1 text-xs text-orange-800 dark:text-orange-200">
+                    <strong class="font-semibold">Missing profile details:</strong>
+                    {% for m in missing %}
+                      <span class="inline-block mr-2">{{ m.label }}{% if not forloop.last %},{% endif %}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            {# ── Documents table ──────────────────────────────── #}
+            {% if group.documents %}
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <tr>
+                      <th class="px-5 py-3">Document</th>
+                      <th class="px-5 py-3">Type</th>
+                      <th class="px-5 py-3">Uploaded</th>
+                      <th class="px-5 py-3">Status</th>
+                      <th class="px-5 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    {% for d in group.documents %}
+                      <tr class="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                        <td class="px-5 py-3">
+                          <a href="/staff/documents/{{ d.id }}/download/"
+                             class="text-brand-700 dark:text-brand-300 hover:underline font-medium">
+                            {{ d.original_filename }}
+                          </a>
+                        </td>
+                        <td class="px-5 py-3 text-xs">{{ d.document_type|default:"—" }}</td>
+                        <td class="px-5 py-3 font-mono text-xs">{{ d.created_at|date:"Y-m-d H:i" }}</td>
+                        <td class="px-5 py-3">
+                          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold
+                            {% if d.status == 'approved' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+                            {% elif d.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                            {% elif d.status == 'submitted' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+                            {% else %}bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                            {{ d.get_status_display|upper }}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="flex items-center justify-end gap-2">
+                            {% if d.status == 'submitted' %}
+                              <form method="post" action="/staff/documents/{{ d.id }}/review/"
+                                    class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <input type="hidden" name="_status" value="{{ status_filter }}">
+                                <input type="hidden" name="_q" value="{{ search }}">
+                                {% if only_missing %}<input type="hidden" name="_only_missing" value="1">{% endif %}
+                                <button type="submit"
+                                        class="rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700">
+                                  Approve
+                                </button>
+                              </form>
+                              <form method="post" action="/staff/documents/{{ d.id }}/review/"
+                                    class="inline-flex items-center gap-1">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <input type="hidden" name="_status" value="{{ status_filter }}">
+                                <input type="hidden" name="_q" value="{{ search }}">
+                                {% if only_missing %}<input type="hidden" name="_only_missing" value="1">{% endif %}
+                                <input type="text" name="notes" placeholder="Reason"
+                                       class="w-28 rounded-md border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-xs px-2 py-1">
+                                <button type="submit"
+                                        class="rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700">
+                                  Reject
+                                </button>
+                              </form>
+                            {% else %}
+                              <span class="text-xs text-slate-400">
+                                {% if d.reviewed_by %}by {{ d.reviewed_by.email }}{% endif %}
+                              </span>
+                              <a href="/staff/documents/{{ d.id }}/download/"
+                                 class="text-xs text-brand-700 dark:text-brand-300 hover:underline">Download</a>
+                            {% endif %}
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                No documents in this status for this client.
+              </div>
+            {% endif %}
+
+          </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    {# ── Pagination ───────────────────────────────────────────── #}
+    {% if page.has_other_pages %}
+      <div class="flex items-center justify-between text-sm">
+        <div class="text-slate-500 dark:text-slate-400">
+          Page {{ page.number }} of {{ page.paginator.num_pages }}
+          · {{ total_clients }} client{{ total_clients|pluralize }}
+        </div>
+        <div class="flex gap-2">
+          {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}&status={{ status_filter }}&q={{ search|urlencode }}{% if only_missing %}&only_missing=1{% endif %}"
+               class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">
+              Previous
+            </a>
+          {% endif %}
+          {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}&status={{ status_filter }}&q={{ search|urlencode }}{% if only_missing %}&only_missing=1{% endif %}"
+               class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">
+              Next
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+      <p class="text-slate-500 dark:text-slate-400">
+        {% if search %}
+          No clients match "{{ search }}".
+        {% elif only_missing %}
+          No clients are missing profile details for this filter.
+        {% else %}
+          No documents in this status.
+        {% endif %}
+      </p>
+      <a href="{% url 'staff_documents_list' %}"
+         class="mt-4 inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        Clear filters
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

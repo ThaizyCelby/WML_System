@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="min-h-full flex flex-col">
+  {% include "components/navbar_public.html" %}
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "components/footer.html" %}
+</div>
+{% endblock %}

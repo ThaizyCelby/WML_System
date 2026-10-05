@@ -1,0 +1,44 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Sign debit mandate{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Sign your debit mandate</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Read the mandate below. By signing, you authorise Wethu Micro Lenders to debit your account on the dates set out in your loan agreement.
+    </p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm leading-relaxed">
+    <h2 class="font-semibold text-brand-950 dark:text-white">Debit Order Mandate</h2>
+    <p>
+      <strong>Account holder:</strong> {{ mandate.account_holder_name }}<br>
+      <strong>Bank:</strong> {{ mandate.bank_name }}<br>
+      <strong>Account:</strong> ****{{ mandate.account_number_last4 }}<br>
+      <strong>Account type:</strong> {{ mandate.account_type|title }}
+    </p>
+    <p>
+      I hereby authorise <strong>Wethu Micro Lenders</strong> and its authorised payment
+      service providers to debit my account for the amounts and on the dates set out in
+      my loan agreement. I understand that:
+    </p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Reasonable notice will be given before each collection.</li>
+      <li>I may cancel this mandate at any time as set out in the loan agreement.</li>
+      <li>The mandate is governed by South African law, including the National Credit Act.</li>
+    </ul>
+  </div>
+
+  <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+    {% csrf_token %}
+    <label class="flex items-start gap-3 text-sm">
+      <input type="checkbox" name="i_agree" value="1" required class="mt-1 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+      <span>I have read and agree to the debit order mandate above.</span>
+    </label>
+    <div class="flex gap-3">
+      <button type="submit" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Sign mandate</button>
+      <a href="{% url 'client_loan_list' %}{{ mandate.loan_id }}/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

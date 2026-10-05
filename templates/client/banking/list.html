@@ -1,0 +1,41 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Bank statements{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-brand-950 dark:text-white">Bank statements</h1>
+  <a href="{% url 'client_bank_upload' %}" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Upload statement</a>
+</div>
+
+{% if statements %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr><th class="px-5 py-3">Bank</th><th class="px-5 py-3">Uploaded</th><th class="px-5 py-3">Transactions</th><th class="px-5 py-3">Status</th><th class="px-5 py-3"></th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for s in statements %}
+        <tr>
+          <td class="px-5 py-3">{{ s.bank_name|default:"—" }}</td>
+          <td class="px-5 py-3 font-mono text-xs">{{ s.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="px-5 py-3 font-mono">{{ s.transactions.count }}</td>
+          <td class="px-5 py-3">
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if s.processing_status == 'completed' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif s.processing_status == 'failed' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">{{ s.get_processing_status_display }}</span>
+          </td>
+          <td class="px-5 py-3"><a href="{% url 'client_bank_list' %}{{ s.id }}/" class="text-brand-700 dark:text-brand-300 hover:underline">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+  <p class="text-slate-500 dark:text-slate-400">No bank statements uploaded yet.</p>
+  <a href="{% url 'client_bank_upload' %}" class="mt-4 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Upload your first statement</a>
+</div>
+{% endif %}
+{% endblock %}

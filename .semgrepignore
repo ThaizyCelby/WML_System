@@ -1,0 +1,6 @@
+venv/
+htmlcov/
+*/migrations/
+*/tests/
+static/
+media/

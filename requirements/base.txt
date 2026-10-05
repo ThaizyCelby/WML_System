@@ -1,0 +1,63 @@
+# Core
+Django
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+django-environ
+django-filter
+drf-spectacular
+django-ratelimit
+django-redis
+django-storages[s3]
+django-ipware
+django-auditlog
+django-mptt
+
+# Database
+psycopg[binary]
+
+pyotp
+qrcode[pil]
+
+cryptography
+# Password Hashing
+argon2-cffi
+
+# Celery
+celery
+redis
+
+# Security
+cryptography
+python-magic
+python-magic-bin
+clamd
+
+# API & Validation
+jsonschema
+bleach
+defusedxml
+defusedcsv
+
+# Utilities
+pydantic
+python-dateutil
+pytz
+structlog
+python-json-logger
+
+# Notifications
+boto3  # For SES
+twilio # SMS (configurable)
+
+# PDF & Documents
+reportlab
+pypdf
+Pillow
+openpyxl
+
+requests
+
+pdfplumber
+pypdfium2
+pytesseract

@@ -1,0 +1,56 @@
+<header x-data="{ mobile: false, scrolled: false }"
+        @scroll.window="scrolled = window.scrollY > 8"
+        :class="scrolled ? 'bg-white/90 dark:bg-slate-950/90 backdrop-blur shadow-sm' : 'bg-transparent'"
+        class="sticky top-0 z-30 transition-colors border-b border-slate-200/70 dark:border-slate-800/70">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 font-bold text-brand-900 dark:text-white">
+        {% include "components/logo.html" %}
+        <span class="tracking-tight">{{ SITE_NAME }}</span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-1">
+        <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
+        <a href="/how-it-works/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">How it works</a>
+        <a href="/products/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Products</a>
+        <a href="/affordability/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Affordability</a>
+        <a href="/about/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">About</a>
+        <a href="/faq/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">FAQ</a>
+        <a href="/contact/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Contact</a>
+      </nav>
+
+      <div class="hidden lg:flex items-center gap-2">
+        <button @click="dark = !dark" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle theme">
+          <svg x-show="!dark" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg x-show="dark" x-cloak class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+        {% if user.is_authenticated %}
+          <a href="/portal/" class="inline-flex items-center rounded-md bg-brand-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-800">Portal</a>
+        {% else %}
+          <a href="/login/" class="inline-flex items-center rounded-md px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Sign in</a>
+          <a href="/register/" class="inline-flex items-center rounded-md bg-brand-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-800">Get started</a>
+        {% endif %}
+      </div>
+
+      <button @click="mobile = !mobile" class="lg:hidden p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle menu">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <div x-show="mobile" x-cloak class="lg:hidden pb-4 space-y-1">
+      <a href="/how-it-works/" class="block px-3 py-2 rounded-md text-sm">How it works</a>
+      <a href="/products/" class="block px-3 py-2 rounded-md text-sm">Products</a>
+      <a href="/affordability/" class="block px-3 py-2 rounded-md text-sm">Affordability</a>
+      <a href="/about/" class="block px-3 py-2 rounded-md text-sm">About</a>
+      <a href="/faq/" class="block px-3 py-2 rounded-md text-sm">FAQ</a>
+      <a href="/contact/" class="block px-3 py-2 rounded-md text-sm">Contact</a>
+      <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+      {% if user.is_authenticated %}
+        <a href="/portal/" class="block px-3 py-2 rounded-md text-sm font-semibold">Portal</a>
+      {% else %}
+        <a href="/login/" class="block px-3 py-2 rounded-md text-sm">Sign in</a>
+        <a href="/register/" class="block px-3 py-2 rounded-md text-sm font-semibold bg-brand-900 text-white">Get started</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

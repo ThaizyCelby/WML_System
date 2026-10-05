@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>{% extends "base.html" %}
+
+{% block body %}
+<div class="min-h-full flex" x-data="{ open: false }">
+  {% include "components/sidebar_portal.html" %}
+
+  <div class="flex-1 min-w-0 flex flex-col lg:pl-72">
+    {% include "components/topbar_portal.html" %}
+
+    <main class="flex-1">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+        {% include "components/alerts.html" %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-4 text-xs text-slate-500 dark:text-slate-400">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2">
+        <span>&copy; {% now "Y" %} {{ SITE_NAME }}. All rights reserved.</span>
+        <span>Registered credit provider: {{ SITE_COMPANY_REG }}</span>
+      </div>
+    </footer>
+  </div>
+</div>
+{% endblock %}

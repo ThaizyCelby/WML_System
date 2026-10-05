@@ -1,0 +1,67 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Fraud alerts{% endblock %}
+{% block content %}
+<div class="space-y-4">
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <form method="get" class="grid sm:grid-cols-3 gap-3">
+      <select name="status" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+        <option value="investigating" {% if status_filter == 'investigating' %}selected{% endif %}>Investigating</option>
+        <option value="escalated" {% if status_filter == 'escalated' %}selected{% endif %}>Escalated</option>
+        <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+        <option value="false_positive" {% if status_filter == 'false_positive' %}selected{% endif %}>False Positive</option>
+        <option value="" {% if status_filter == '' %}selected{% endif %}>All</option>
+      </select>
+      <select name="severity" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        <option value="">All severities</option>
+        <option value="critical" {% if severity_filter == 'critical' %}selected{% endif %}>Critical</option>
+        <option value="high" {% if severity_filter == 'high' %}selected{% endif %}>High</option>
+        <option value="medium" {% if severity_filter == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="low" {% if severity_filter == 'low' %}selected{% endif %}>Low</option>
+      </select>
+      <button class="rounded-lg bg-brand-900 text-white text-sm font-semibold hover:bg-brand-800">Filter</button>
+    </form>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-5 py-3">Type</th>
+            <th class="px-5 py-3">Severity</th>
+            <th class="px-5 py-3 text-right">Score</th>
+            <th class="px-5 py-3">Summary</th>
+            <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3">When</th>
+            <th class="px-5 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for a in page %}
+          <tr>
+            <td class="px-5 py-3">{{ a.alert_type }}</td>
+            <td class="px-5 py-3">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                {% if a.severity == 'critical' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                {% elif a.severity == 'high' %}bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300
+                {% elif a.severity == 'medium' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+                {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">{{ a.severity|upper }}</span>
+            </td>
+            <td class="px-5 py-3 text-right font-mono font-bold">{{ a.risk_score }}</td>
+            <td class="px-5 py-3 text-xs">{{ a.summary|truncatechars:80 }}</td>
+            <td class="px-5 py-3">{{ a.get_status_display }}</td>
+            <td class="px-5 py-3 font-mono text-xs">{{ a.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="px-5 py-3"><a href="{% url 'staff_fraud_list' %}{{ a.id }}/" class="text-brand-700 dark:text-brand-300 hover:underline">Open</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-500">No fraud alerts.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

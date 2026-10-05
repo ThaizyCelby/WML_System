@@ -1,0 +1,25 @@
+{% extends "base_public.html" %}
+{% block title %}Privacy policy — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 prose dark:prose-invert">
+  <h1>Privacy policy</h1>
+  <p>{{ SITE_NAME }} processes personal information in accordance with the Protection of Personal Information Act (POPIA).</p>
+
+  <h2>What we collect</h2>
+  <p>Identity, contact, employment, financial, and banking information necessary to assess and service your loan.</p>
+
+  <h2>Why we collect it</h2>
+  <ul>
+    <li>To assess your loan application and affordability.</li>
+    <li>To comply with applicable credit and financial laws.</li>
+    <li>To service, collect, and reconcile your loan.</li>
+    <li>To prevent fraud and protect your account.</li>
+  </ul>
+
+  <h2>Your rights</h2>
+  <p>You may request access to, correction of, or deletion of your personal information, subject to legal retention requirements. Email <a href="mailto:{{ SITE_SUPPORT_EMAIL }}">{{ SITE_SUPPORT_EMAIL }}</a>.</p>
+
+  <h2>Retention</h2>
+  <p>We retain information for as long as required by law and our regulatory obligations. Documents may be automatically purged under our retention policy.</p>
+</section>
+{% endblock %}

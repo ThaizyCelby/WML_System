@@ -1,0 +1,30 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Recovery codes{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+
+  <div class="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-5">
+    <h1 class="text-base font-semibold text-amber-900 dark:text-amber-100">Save your recovery codes</h1>
+    <p class="text-xs text-amber-800 dark:text-amber-200 mt-1">
+      Each code can be used once if you lose access to your authenticator app.
+      Store these somewhere safe. They will not be shown again.
+    </p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <div class="grid grid-cols-2 gap-3 font-mono text-sm">
+      {% for code in codes %}
+        <div class="rounded bg-slate-100 dark:bg-slate-800 px-3 py-2 select-all text-center">
+          {{ code }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <a href="{% url 'home' %}"
+     class="block w-full rounded-lg bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-800 text-center">
+    I've saved my codes
+  </a>
+
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base_public.html" %}
+{% block title %}Loan products — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
+  <h1 class="text-4xl font-extrabold text-brand-950 dark:text-white">Loan products</h1>
+  <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">Transparent terms, competitive pricing, and terms that fit your cash flow.</p>
+
+  {% if products %}
+  <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for p in products %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h3 class="font-semibold text-brand-950 dark:text-white text-lg">{{ p.name }}</h3>
+      {% if p.description %}<p class="text-sm text-slate-600 dark:text-slate-300 mt-2">{{ p.description }}</p>{% endif %}
+      <dl class="mt-4 space-y-2 text-sm">
+        <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">Amount</dt><dd class="font-mono">R {{ p.min_amount|floatformat:"0" }} – R {{ p.max_amount|floatformat:"0" }}</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">Term</dt><dd class="font-mono">{{ p.min_term }}–{{ p.max_term }} months</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">Interest (annual)</dt><dd class="font-mono">{{ p.interest_rate }}%</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">Repayment</dt><dd class="font-mono">{{ p.get_repayment_frequency_display }}</dd></div>
+      </dl>
+      <a href="/register/" class="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Apply</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="mt-10 rounded-xl border border-slate-200 dark:border-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+    Product catalogue is being updated. Please check back soon or <a href="/contact/" class="text-brand-700 dark:text-brand-300 hover:underline">contact us</a>.
+  </div>
+  {% endif %}
+
+  <p class="mt-8 text-xs text-slate-500 dark:text-slate-400">All loans are subject to affordability assessment and credit checks. Terms and conditions apply.</p>
+</section>
+{% endblock %}

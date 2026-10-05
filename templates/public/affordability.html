@@ -1,0 +1,72 @@
+{% extends "base_public.html" %}
+{% block title %}Affordability calculator — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-16" x-data="affordabilityCalc()">
+  <h1 class="text-4xl font-extrabold text-brand-950 dark:text-white">Affordability calculator</h1>
+  <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">A quick estimate of what you could responsibly borrow. The final decision is always made by our credit team using verified income and documents.</p>
+
+  <div class="mt-10 grid md:grid-cols-2 gap-8">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Monthly income (R)</label>
+        <input type="number" min="0" x-model.number="income" class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950" placeholder="20000">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Living expenses (R)</label>
+        <input type="number" min="0" x-model.number="expenses" class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950" placeholder="7000">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Existing debt repayments (R)</label>
+        <input type="number" min="0" x-model.number="debts" class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950" placeholder="5000">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Proposed monthly repayment (R)</label>
+        <input type="number" min="0" x-model.number="repayment" class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950" placeholder="2000">
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <h2 class="font-semibold text-brand-950 dark:text-white">Result</h2>
+      <dl class="mt-4 space-y-3 text-sm">
+        <div class="flex justify-between"><dt>Disposable income</dt><dd class="font-mono">R <span x-text="fmt(disposable)"></span></dd></div>
+        <div class="flex justify-between"><dt>Affordability ratio</dt><dd class="font-mono" x-text="ratio"></dd></div>
+        <div class="flex justify-between"><dt>Remaining after repayment</dt><dd class="font-mono">R <span x-text="fmt(remaining)"></span></dd></div>
+      </dl>
+      <div class="mt-5">
+        <span :class="verdictClass" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold" x-text="verdict"></span>
+      </div>
+      <p class="mt-6 text-xs text-slate-500 dark:text-slate-400">This is an estimate only. Affordability is verified by {{ SITE_NAME }} using your uploaded documents and bank statements. Interest, fees, and total repayment are shown on your offer.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function affordabilityCalc() {
+  return {
+    income: 20000, expenses: 7000, debts: 5000, repayment: 2000,
+    get disposable() { return Math.max(0, (this.income||0) - (this.expenses||0) - (this.debts||0)); },
+    get remaining() { return (this.disposable - (this.repayment||0)); },
+    get ratio() {
+      if (!this.disposable) return '—';
+      return ((this.repayment||0) / this.disposable).toFixed(2);
+    },
+    get verdict() {
+      const r = this.remaining;
+      if (r < 0) return 'Not affordable';
+      if ((this.repayment||0) / (this.disposable || 1) <= 0.3) return 'Comfortable';
+      if ((this.repayment||0) / (this.disposable || 1) <= 0.5) return 'Borderline';
+      return 'Stretched';
+    },
+    get verdictClass() {
+      const v = this.verdict;
+      if (v === 'Comfortable') return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
+      if (v === 'Borderline') return 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300';
+      return 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300';
+    },
+    fmt(n) { return (Math.round((n||0) * 100) / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+  }
+}
+</script>
+{% endblock %}

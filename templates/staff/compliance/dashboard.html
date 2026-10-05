@@ -1,0 +1,145 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Compliance{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Compliance</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      POPIA · PAIA · NCA — policies, tasks, data subject requests, and security incidents.
+    </p>
+  </div>
+
+  {# ─── KPI cards ──────────────────────────────────────────── #}
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <a href="{% url 'staff_compliance_policies' %}"
+       class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:shadow transition">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Active policies</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white">{{ policy_stats.active }}</p>
+      {% if policy_stats.review_due %}
+        <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">{{ policy_stats.review_due }} review due</p>
+      {% endif %}
+    </a>
+
+    <a href="{% url 'staff_compliance_tasks' %}"
+       class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:shadow transition">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Open tasks</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white">{{ task_stats.pending|add:task_stats.in_progress }}</p>
+      {% if task_stats.overdue %}
+        <p class="text-xs text-rose-600 dark:text-rose-400 mt-1">{{ task_stats.overdue }} overdue</p>
+      {% else %}
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ task_stats.due_soon }} due in 30 days</p>
+      {% endif %}
+    </a>
+
+    <a href="{% url 'staff_compliance_dsars' %}"
+       class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:shadow transition">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Open DSARs</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white">{{ dsar_stats.open }}</p>
+      {% if dsar_stats.overdue %}
+        <p class="text-xs text-rose-600 dark:text-rose-400 mt-1">{{ dsar_stats.overdue }} past 30-day SLA</p>
+      {% else %}
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Within SLA</p>
+      {% endif %}
+    </a>
+
+    <a href="{% url 'staff_compliance_incidents' %}"
+       class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:shadow transition">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Open incidents</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white">{{ incident_stats.open }}</p>
+      {% if incident_stats.notification_pending %}
+        <p class="text-xs text-rose-600 dark:text-rose-400 mt-1">{{ incident_stats.notification_pending }} awaiting notification</p>
+      {% else %}
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">No pending notifications</p>
+      {% endif %}
+    </a>
+  </div>
+
+  {# ─── Three-column recent activity ──────────────────────── #}
+  <div class="grid lg:grid-cols-3 gap-6">
+
+    <!-- Recent tasks -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Upcoming tasks</h2>
+        <a href="{% url 'staff_compliance_tasks' %}" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">All →</a>
+      </div>
+      {% if recent_tasks %}
+        <ul class="space-y-3 text-sm">
+          {% for t in recent_tasks %}
+            <li>
+              <div class="font-medium text-slate-700 dark:text-slate-200 truncate">{{ t.title }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                Due {{ t.due_date }}
+                {% if t.is_overdue %}<span class="text-rose-600 dark:text-rose-400 font-semibold ml-1">OVERDUE</span>{% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No tasks.</p>
+      {% endif %}
+    </div>
+
+    <!-- Recent DSARs -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Open DSARs</h2>
+        <a href="{% url 'staff_compliance_dsars' %}" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">All →</a>
+      </div>
+      {% if recent_dsars %}
+        <ul class="space-y-3 text-sm">
+          {% for d in recent_dsars %}
+            <li>
+              <a href="{% url 'staff_compliance_dsar_detail' d.id %}" class="font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">{{ d.get_request_type_display }}</a>
+              <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                {{ d.requestor_email }} · due {{ d.sla_due_at|date:"Y-m-d" }}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No open requests.</p>
+      {% endif %}
+    </div>
+
+    <!-- Recent incidents -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Open incidents</h2>
+        <a href="{% url 'staff_compliance_incidents' %}" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">All →</a>
+      </div>
+      {% if recent_incidents %}
+        <ul class="space-y-3 text-sm">
+          {% for i in recent_incidents %}
+            <li>
+              <a href="{% url 'staff_compliance_incident_detail' i.id %}" class="font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">{{ i.title }}</a>
+              <div class="text-xs text-slate-500 dark:text-slate-400">
+                <span class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold mr-1
+                  {% if i.severity == 'critical' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                  {% elif i.severity == 'high' %}bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300
+                  {% elif i.severity == 'medium' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+                  {% else %}bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300{% endif %}">{{ i.severity|upper }}</span>
+                Detected {{ i.detected_at|date:"Y-m-d" }}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No open incidents.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {# ─── Nav row ──────────────────────────────────────────────── #}
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <a href="{% url 'staff_compliance_policies' %}" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Policies</a>
+    <a href="{% url 'staff_compliance_tasks' %}" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Tasks</a>
+    <a href="{% url 'staff_compliance_dsars' %}" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Data subject requests</a>
+    <a href="{% url 'staff_compliance_incidents' %}" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Security incidents</a>
+    <a href="{% url 'staff_compliance_processors' %}" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Data processors</a>
+  </div>
+
+</div>
+{% endblock %}

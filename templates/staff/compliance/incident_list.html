@@ -1,0 +1,78 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Security incidents{% endblock %}
+{% block content %}
+<div class="space-y-5">
+
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Security incidents</h1>
+    <a href="{% url 'staff_compliance_dashboard' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Back to compliance</a>
+  </div>
+
+  <form method="get" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <div class="grid sm:grid-cols-12 gap-3">
+      <select name="status" class="sm:col-span-3 rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        <option value="">All statuses</option>
+        {% for v, l in statuses %}<option value="{{ v }}" {% if status_filter == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+      <select name="severity" class="sm:col-span-3 rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        <option value="">All severities</option>
+        {% for v, l in severities %}<option value="{{ v }}" {% if severity_filter == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="sm:col-span-2 rounded-lg bg-brand-900 text-white text-sm font-semibold hover:bg-brand-800">Apply</button>
+      <a href="{% url 'staff_compliance_incidents' %}" class="sm:col-span-2 rounded-lg border border-slate-300 dark:border-slate-700 text-sm text-center py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Clear</a>
+    </div>
+  </form>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr>
+          <th class="px-5 py-3">Title</th>
+          <th class="px-5 py-3">Type</th>
+          <th class="px-5 py-3">Severity</th>
+          <th class="px-5 py-3">Detected</th>
+          <th class="px-5 py-3">Status</th>
+          <th class="px-5 py-3">Notif.</th>
+          <th class="px-5 py-3 text-right"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for i in page.object_list %}
+          <tr>
+            <td class="px-5 py-3 font-medium">{{ i.title }}</td>
+            <td class="px-5 py-3 text-xs">{{ i.get_incident_type_display }}</td>
+            <td class="px-5 py-3">
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold
+                {% if i.severity == 'critical' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                {% elif i.severity == 'high' %}bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300
+                {% elif i.severity == 'medium' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+                {% else %}bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                {{ i.severity|upper }}
+              </span>
+            </td>
+            <td class="px-5 py-3 font-mono text-xs">{{ i.detected_at|date:"Y-m-d H:i" }}</td>
+            <td class="px-5 py-3 text-xs">{{ i.get_status_display }}</td>
+            <td class="px-5 py-3">
+              {% if i.requires_notification %}
+                {% if i.regulator_notified_at %}
+                  <span class="text-[10px] font-bold text-emerald-600">DONE</span>
+                {% else %}
+                  <span class="text-[10px] font-bold text-rose-600">PENDING</span>
+                {% endif %}
+              {% else %}
+                <span class="text-[10px] text-slate-400">—</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3 text-right">
+              <a href="{% url 'staff_compliance_incident_detail' i.id %}" class="text-xs text-brand-700 dark:text-brand-300 hover:underline font-semibold">Open</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-500 dark:text-slate-400">No incidents.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

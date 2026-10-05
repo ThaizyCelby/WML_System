@@ -1,0 +1,17 @@
+<div class="space-y-4">
+  {% for m in messages %}
+    {% if m.role == 'user' %}
+      <div class="flex justify-end">
+        <div class="max-w-[80%] rounded-2xl rounded-br-sm bg-brand-900 text-white px-4 py-2.5 text-sm whitespace-pre-wrap">{{ m.content }}</div>
+      </div>
+    {% else %}
+      <div class="flex justify-start">
+        <div class="max-w-[85%] rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-2.5 text-sm whitespace-pre-wrap">{{ m.content }}</div>
+      </div>
+    {% endif %}
+  {% empty %}
+    <p class="text-sm text-slate-500 dark:text-slate-400 text-center">
+      Start by asking a question below.
+    </p>
+  {% endfor %}
+</div>

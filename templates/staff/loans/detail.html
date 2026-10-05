@@ -1,0 +1,262 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Loan {{ loan.id|slice:":8" }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  {# ─── Header ────────────────────────────────────────────── #}
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">
+        Loan {{ loan.id|slice:":8" }}
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        {{ loan.client.email }}
+        {% if loan.product %} · {{ loan.product.name }}{% endif %}
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+        {% if loan.status == 'active' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+        {% elif loan.status == 'overdue' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+        {% elif loan.status == 'defaulted' %}bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-200
+        {% elif loan.status == 'paid' %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300
+        {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+        {{ loan.get_status_display }}
+      </span>
+      {% if loan.default_risk_band %}
+        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold
+          {% if loan.default_risk_band == 'critical' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+          {% elif loan.default_risk_band == 'high' %}bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300
+          {% elif loan.default_risk_band == 'medium' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+          {% else %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300{% endif %}">
+          Risk {{ loan.default_risk_score }}
+        </span>
+      {% endif %}
+      <a href="/staff/loans/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        Back
+      </a>
+    </div>
+  </div>
+
+  {# ─── KPI cards ─────────────────────────────────────────── #}
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Principal</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">
+        R {{ loan.principal_amount|floatformat:2 }}
+      </p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Interest</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">
+        R {{ loan.total_interest|floatformat:2 }}
+      </p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ loan.interest_rate }}% annual</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Outstanding</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">
+        R {{ loan.outstanding_balance|floatformat:2 }}
+      </p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Term</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">
+        {{ loan.term_periods }}
+      </p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ loan.repayment_frequency }}</p>
+    </div>
+  </div>
+
+  {# ─── Client + loan info ────────────────────────────────── #}
+  <div class="grid lg:grid-cols-3 gap-6">
+
+    {# Client card #}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+      <h2 class="font-semibold text-brand-950 dark:text-white">Client</h2>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Name</span>
+        <span>{{ loan.client.full_name|default:"—" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Email</span>
+        <span class="font-mono text-xs">{{ loan.client.email }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Phone</span>
+        <span>{{ loan.client.phone_number|default:"—" }}</span></div>
+      {% if loan.client.client_profile %}
+        <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">ID number</span>
+          <span class="font-mono text-xs">{{ loan.client.client_profile.id_number|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">KYC</span>
+          <span>{{ loan.client.client_profile.get_kyc_status_display }}</span></div>
+      {% endif %}
+      <a href="/staff/applications/{{ loan.application_id }}/"
+         class="inline-flex items-center text-brand-700 dark:text-brand-300 hover:underline text-xs font-semibold">
+        View application →
+      </a>
+    </div>
+
+    {# Disbursement / dates #}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+      <h2 class="font-semibold text-brand-950 dark:text-white">Disbursement</h2>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Start date</span>
+        <span class="font-mono">{{ loan.start_date|date:"Y-m-d"|default:"—" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">End date</span>
+        <span class="font-mono">{{ loan.end_date|date:"Y-m-d"|default:"—" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Collection day</span>
+        <span class="font-mono">{{ loan.collection_day|default:"—" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Frequency</span>
+        <span>{{ loan.repayment_frequency|title }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Fees total</span>
+        <span class="font-mono">R {{ loan.fees_total|floatformat:2 }}</span></div>
+    </div>
+
+    {# Mandate card #}
+    {% with mandate=loan.debit_instructions.first %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-brand-950 dark:text-white">Debit mandate</h2>
+        {% if mandate %}
+          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+            {% if mandate.status == 'active' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+            {% elif mandate.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+            {% else %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300{% endif %}">
+            {{ mandate.get_status_display }}
+          </span>
+        {% endif %}
+      </div>
+      {% if mandate %}
+        <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Bank</span>
+          <span>{{ mandate.bank_name }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account</span>
+          <span class="font-mono">{{ mandate.masked_account }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Reference</span>
+          <span class="font-mono text-xs">{{ mandate.mandate_reference_number|default:"—" }}</span></div>
+        <a href="/staff/mandates/{{ mandate.id }}/"
+           class="inline-flex items-center text-brand-700 dark:text-brand-300 hover:underline text-xs font-semibold">
+          Open mandate →
+        </a>
+      {% else %}
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          No mandate on file. The client must sign one before disbursement.
+        </p>
+      {% endif %}
+    </div>
+    {% endwith %}
+
+  </div>
+
+  {# ─── Collection window (inline; no self-include) ──────── #}
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Collection window</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Days of the month the system may attempt collection. Outside this window, missed
+          instalments sit in the collections queue.
+        </p>
+      </div>
+      {% if loan.collection_window_start %}
+        <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 px-2.5 py-0.5 text-xs font-medium">
+          Day {{ loan.collection_window_start }} – {{ loan.collection_window_end }}
+        </span>
+      {% else %}
+        <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-0.5 text-xs font-medium">
+          Not set
+        </span>
+      {% endif %}
+    </div>
+
+    <form method="post" action="/staff/loans/{{ loan.id }}/collection-window/" class="space-y-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-medium">From (day)</label>
+          <input type="number" name="collection_window_start" min="1" max="31" required
+                 value="{{ loan.collection_window_start|default:loan.collection_day|default:1 }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium">To (day)</label>
+          <input type="number" name="collection_window_end" min="1" max="31" required
+                 value="{{ loan.collection_window_end|default:loan.collection_day|default:1 }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium">Max retries</label>
+          <input type="number" name="max_retry_attempts" min="0" max="10" required
+                 value="{{ loan.max_retry_attempts|default:3 }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+        </div>
+      </div>
+      <button type="submit"
+              class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
+        Save collection window
+      </button>
+    </form>
+  </div>
+
+  {# ─── Failed payments shortcut ──────────────────────────── #}
+  {% if failed_count %}
+    <div class="rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/20 p-4 flex items-center justify-between">
+      <div class="text-sm text-rose-800 dark:text-rose-200">
+        <strong>{{ failed_count }}</strong> failed debit{{ failed_count|pluralize }} waiting for retry decision.
+      </div>
+      <a href="/staff/payments/retry-queue/"
+         class="rounded-lg bg-rose-700 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-800">
+        Open retry queue
+      </a>
+    </div>
+  {% endif %}
+
+  {# ─── Repayment schedule ───────────────────────────────── #}
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Repayment schedule</h2>
+      <span class="text-xs text-slate-500 dark:text-slate-400">{{ schedule|length }} instalments</span>
+    </div>
+    {% if schedule %}
+      <div class="overflow-x-auto max-h-[32rem] overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 sticky top-0">
+            <tr>
+              <th class="px-5 py-3">#</th>
+              <th class="px-5 py-3">Due date</th>
+              <th class="px-5 py-3 text-right">Principal</th>
+              <th class="px-5 py-3 text-right">Interest</th>
+              <th class="px-5 py-3 text-right">Total</th>
+              <th class="px-5 py-3 text-right">Paid</th>
+              <th class="px-5 py-3 text-right">Outstanding</th>
+              <th class="px-5 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for s in schedule %}
+              <tr class="{% if s.status == 'paid' %}bg-emerald-50/30 dark:bg-emerald-950/10{% elif s.status == 'overdue' %}bg-rose-50/40 dark:bg-rose-950/10{% endif %}">
+                <td class="px-5 py-3 font-mono">{{ s.period_number }}</td>
+                <td class="px-5 py-3 font-mono text-xs">{{ s.scheduled_date }}</td>
+                <td class="px-5 py-3 text-right font-mono">R {{ s.principal_portion|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right font-mono">R {{ s.interest_portion|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right font-mono font-semibold">R {{ s.total_amount|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right font-mono">R {{ s.amount_paid|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right font-mono">R {{ s.outstanding|floatformat:2 }}</td>
+                <td class="px-5 py-3">
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium
+                    {% if s.status == 'paid' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+                    {% elif s.status == 'overdue' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                    {% elif s.status == 'partial' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+                    {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                    {{ s.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        No repayment schedule generated yet.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<div class="space-y-4">
+  {% if payday or debt %}
+  <div class="rounded-xl border-2 border-brand-100 dark:border-brand-900/40 bg-brand-50/40 dark:bg-brand-950/20 p-5">
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold uppercase tracking-wide text-brand-800 dark:text-brand-200">AI-assisted analysis</span>
+      <span class="inline-flex items-center rounded-full bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-900/50 px-2 py-0.5 text-[10px] font-medium">Advisory only</span>
+    </div>
+    <p class="mt-2 text-xs text-slate-600 dark:text-slate-300">These figures are estimates produced by AI models on your transaction data. They are not verified facts and do not determine your loan terms.</p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <h3 class="text-sm font-semibold">Payday detection</h3>
+      {% if payday and payday.output_data %}
+        <dl class="mt-3 space-y-1.5 text-sm">
+          {% for k, v in payday.output_data.items %}
+          <div class="flex justify-between gap-3">
+            <dt class="text-slate-500 dark:text-slate-400">{{ k|cut:"_"|title }}</dt>
+            <dd class="font-mono text-right break-all">{{ v }}</dd>
+          </div>
+          {% endfor %}
+        </dl>
+        <p class="mt-3 text-xs text-slate-400">Model: {{ payday.provider }} / {{ payday.model_name }}</p>
+      {% else %}
+        <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">No payday analysis available.</p>
+      {% endif %}
+    </div>
+
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <h3 class="text-sm font-semibold">Recurring obligations</h3>
+      {% if debt and debt.output_data %}
+        <div class="mt-3 space-y-2 text-sm">
+          {% for creditor in debt.output_data.creditors %}
+          <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+            <div class="flex justify-between"><span class="font-medium">{{ creditor.creditor_name }}</span><span class="font-mono">R {{ creditor.monthly_payment }}</span></div>
+            <p class="text-xs text-slate-500 mt-1">{{ creditor.frequency }} · last {{ creditor.last_payment_date }}</p>
+          </div>
+          {% empty %}
+            <p class="text-slate-500 dark:text-slate-400">No recurring obligations detected.</p>
+          {% endfor %}
+        </div>
+        <p class="mt-3 text-xs text-slate-400">Model: {{ debt.provider }} / {{ debt.model_name }}</p>
+      {% else %}
+        <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">No debt analysis available.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+    <div class="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-5 text-sm text-amber-800 dark:text-amber-200">
+      AI analysis is currently unavailable (no provider configured or a temporary error). You can still proceed — our credit team will review your statement manually.
+    </div>
+  {% endif %}
+</div>

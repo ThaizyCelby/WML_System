@@ -1,0 +1,28 @@
+{% extends "base_public.html" %}
+{% block title %}Security — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 prose dark:prose-invert">
+  <h1>Security</h1>
+  <p>Security is foundational to {{ SITE_NAME }}. Here's how we protect your information and our platform.</p>
+
+  <h2>How we protect your data</h2>
+  <ul>
+    <li>All traffic is encrypted in transit using TLS 1.2+ with HSTS.</li>
+    <li>Data at rest is protected by disk encryption and access controls.</li>
+    <li>Documents are stored privately and served only via authenticated backend downloads.</li>
+    <li>Strict role-based access control is enforced server-side on every request.</li>
+    <li>All sensitive actions are written to an immutable audit log.</li>
+  </ul>
+
+  <h2>How we protect your account</h2>
+  <ul>
+    <li>Strong password policy and rate-limited login.</li>
+    <li>Account lockout after repeated failed attempts.</li>
+    <li>Continuous monitoring for suspicious activity.</li>
+    <li>Session expiry and session management.</li>
+  </ul>
+
+  <h2>Reporting a vulnerability</h2>
+  <p>Please email <a href="mailto:{{ SITE_SUPPORT_EMAIL }}">{{ SITE_SUPPORT_EMAIL }}</a>. We will respond promptly and will not take legal action against good-faith security researchers.</p>
+</section>
+{% endblock %}

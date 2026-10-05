@@ -1,0 +1,257 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Profile{% endblock %}
+{% block content %}
+
+<div class="max-w-3xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">My profile</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Keep your personal, employment, and consent information up to date.
+    </p>
+  </div>
+
+  {% if messages %}
+    <div class="space-y-2">
+      {% for m in messages %}
+        <div class="rounded-lg border px-4 py-3 text-sm
+          {% if m.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200
+          {% elif m.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200
+          {% else %}border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200{% endif %}">
+          {{ m }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- ─── Personal information ─────────────────────────── -->
+    <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+      <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Personal information</h2>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label for="first_name" class="block text-sm font-medium">First name</label>
+          <input id="first_name" name="first_name" value="{{ user.first_name|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+        <div>
+          <label for="last_name" class="block text-sm font-medium">Last name</label>
+          <input id="last_name" name="last_name" value="{{ user.last_name|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">Email</label>
+          <input value="{{ user.email }}" disabled
+                 class="mt-1 w-full rounded-lg border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-slate-500">
+          <p class="mt-1 text-xs text-slate-400">Contact support to change your email.</p>
+        </div>
+        <div>
+          <label for="phone_number" class="block text-sm font-medium">Mobile number</label>
+          <input id="phone_number" name="phone_number" value="{{ user.phone_number|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label for="id_number" class="block text-sm font-medium">ID number</label>
+          <input id="id_number" name="id_number" value="{{ client_profile.id_number|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+        <div>
+          <label for="date_of_birth" class="block text-sm font-medium">Date of birth</label>
+          <input id="date_of_birth" name="date_of_birth" type="date"
+                 value="{{ client_profile.date_of_birth|date:'Y-m-d' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+              <label class="block text-sm font-medium">Residential address</label>
+              <input id="address_street" name="address_street"
+                     value="{{ client_profile.residential_address.street|default:'' }}"
+                     placeholder="Street address"
+                     class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          </div>
+          <div>
+              <label class="block text-sm font-medium">City / Town</label>
+              <input id="address_city" name="address_city"
+                     value="{{ client_profile.residential_address.city|default:'' }}"
+                     class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          </div>
+          <div>
+              <label class="block text-sm font-medium">Province</label>
+              <input id="address_province" name="address_province"
+                     value="{{ client_profile.residential_address.province|default:'' }}"
+                     class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          </div>
+          <div>
+              <label class="block text-sm font-medium">Postal code</label>
+              <input id="address_postal_code" name="address_postal_code"
+                     value="{{ client_profile.residential_address.postal_code|default:'' }}"
+                     class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ─── Employment & income ───────────────────────────── -->
+    <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+      <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Employment &amp; income</h2>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label for="employment_type" class="block text-sm font-medium">Employment type</label>
+          <select id="employment_type" name="employment_type"
+                  class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+            <option value="">—</option>
+            <option value="full_time"     {% if client_profile.employment_type == 'full_time' %}selected{% endif %}>Full time</option>
+            <option value="part_time"     {% if client_profile.employment_type == 'part_time' %}selected{% endif %}>Part time</option>
+            <option value="self_employed" {% if client_profile.employment_type == 'self_employed' %}selected{% endif %}>Self-employed</option>
+            <option value="contract"      {% if client_profile.employment_type == 'contract' %}selected{% endif %}>Contract</option>
+            <option value="unemployed"    {% if client_profile.employment_type == 'unemployed' %}selected{% endif %}>Unemployed</option>
+            <option value="retired"       {% if client_profile.employment_type == 'retired' %}selected{% endif %}>Retired</option>
+          </select>
+        </div>
+        <div>
+          <label for="employer_name" class="block text-sm font-medium">Employer</label>
+          <input id="employer_name" name="employer_name" value="{{ client_profile.employer_name|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div>
+          <label for="monthly_income" class="block text-sm font-medium">Monthly income (R)</label>
+          <input id="monthly_income" name="monthly_income" type="number" step="0.01" min="0"
+                 value="{{ client_profile.monthly_income|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+        <div>
+          <label for="monthly_expenses" class="block text-sm font-medium">Monthly expenses (R)</label>
+          <input id="monthly_expenses" name="monthly_expenses" type="number" step="0.01" min="0"
+                 value="{{ client_profile.monthly_expenses|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        </div>
+        <div>
+          <label for="existing_debt_obligations" class="block text-sm font-medium">
+            Existing debt (R)
+          </label>
+          <input id="existing_debt_obligations" name="existing_debt_obligations"
+                 type="number" step="0.01" min="0"
+                 value="{{ client_profile.existing_debt_obligations|default:'' }}"
+                 class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+          <p class="mt-1 text-xs text-slate-400">
+            Verified against credit bureaus during an application.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Consents (POPIA + NCA) ────────────────────────── -->
+    <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Consents</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Required under POPIA and the National Credit Act. Your consent is
+            recorded with a timestamp, version, and IP address for audit purposes.
+          </p>
+        </div>
+      </div>
+
+      <label class="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="consent_credit_check" value="1"
+               {% if consent_records.credit_check_consent.granted %}checked{% endif %}
+               class="mt-1 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        <span>
+          I consent to Wethu Micro Lenders performing a
+          <strong>credit bureau check</strong> for the purpose of an affordability
+          assessment, in line with Section 81 of the National Credit Act.
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="consent_affordability" value="1"
+               {% if consent_records.affordability_consent.granted %}checked{% endif %}
+               class="mt-1 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        <span>
+          I consent to an <strong>affordability assessment</strong> under Section 81
+          of the National Credit Act.
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="consent_terms" value="1"
+               {% if consent_records.terms_accepted.granted %}checked{% endif %}
+               class="mt-1 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        <span>
+          I accept the
+          <a href="/terms/" class="text-brand-700 dark:text-brand-300 hover:underline">Terms &amp; Conditions</a>.
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="consent_privacy" value="1"
+               {% if consent_records.privacy_accepted.granted %}checked{% endif %}
+               class="mt-1 rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        <span>
+          I have read and accept the
+          <a href="/privacy/" class="text-brand-700 dark:text-brand-300 hover:underline">Privacy Notice</a>
+          (POPIA).
+        </span>
+      </label>
+
+      <div class="pt-3 border-t border-slate-200 dark:border-slate-800">
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          You can withdraw consent at any time by contacting support. Withdrawing consent
+          to the credit bureau check will prevent you from submitting new loan applications.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Notification preferences ──────────────────────── -->
+    <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Notification preferences</h2>
+
+      <label class="flex items-center gap-3 text-sm">
+        <input type="checkbox" name="email_enabled" {% if prefs.email_enabled %}checked{% endif %}
+               class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        Email notifications
+      </label>
+      <label class="flex items-center gap-3 text-sm">
+        <input type="checkbox" name="sms_enabled" {% if prefs.sms_enabled %}checked{% endif %}
+               class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        SMS notifications
+      </label>
+      <label class="flex items-center gap-3 text-sm">
+        <input type="checkbox" name="in_app_enabled" {% if prefs.in_app_enabled %}checked{% endif %}
+               class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        In-app notifications
+      </label>
+      <label class="flex items-center gap-3 text-sm">
+        <input type="checkbox" name="marketing_opt_in" {% if prefs.marketing_opt_in %}checked{% endif %}
+               class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+        Receive product news and offers
+      </label>
+    </section>
+
+    <!-- ─── Actions ───────────────────────────────────────── -->
+    <div class="flex flex-wrap gap-3">
+      <button type="submit"
+              class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+        Save changes
+      </button>
+      <a href="/password-change/"
+         class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        Change password
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

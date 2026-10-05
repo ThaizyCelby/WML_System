@@ -1,0 +1,32 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Request document correction{% endblock %}
+{% block content %}
+<div class="max-w-xl space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Request a correction</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      You can request to replace this document. A staff member will review your request.
+    </p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 text-sm">
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Document type</span><span>{{ document.document_type }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Filename</span><span>{{ document.original_filename }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Approved on</span><span>{{ document.updated_at|date:"Y-m-d H:i" }}</span></div>
+  </div>
+
+  <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+    {% csrf_token %}
+    <div>
+      <label for="reason" class="block text-sm font-medium">Reason for replacement</label>
+      <textarea id="reason" name="reason" rows="4" required
+                class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950"
+                placeholder="Explain why this document needs to be replaced (e.g., wrong document, outdated, unreadable)."></textarea>
+    </div>
+    <div class="flex gap-3">
+      <button type="submit" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Submit request</button>
+      <a href="{% url 'client_document_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

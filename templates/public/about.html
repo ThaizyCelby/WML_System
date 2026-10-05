@@ -1,0 +1,24 @@
+{% extends "base_public.html" %}
+{% block title %}About — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-16">
+  <h1 class="text-4xl font-extrabold text-brand-950 dark:text-white">About {{ SITE_NAME }}</h1>
+  <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">We are a South African micro-lender built on transparency, affordability, and modern financial technology.</p>
+
+  <div class="mt-10 prose dark:prose-invert max-w-none">
+    <h2>Our purpose</h2>
+    <p>To provide access to fair, transparent credit to South Africans who need it — without compromising on responsible lending standards.</p>
+
+    <h2>What makes us different</h2>
+    <ul>
+      <li><strong>Affordability first.</strong> We use a deterministic engine to verify what you can responsibly repay.</li>
+      <li><strong>AI where it helps — never where it decides.</strong> AI assists our human reviewers. It does not approve or reject loans.</li>
+      <li><strong>Transparent pricing.</strong> Interest and fees are shown upfront, in Rand, in writing.</li>
+      <li><strong>Data minimisation.</strong> We collect only what we need, and we retain it according to POPIA requirements.</li>
+    </ul>
+
+    <h2>Registration</h2>
+    <p>Registered credit provider: <strong>{{ SITE_COMPANY_REG }}</strong></p>
+  </div>
+</section>
+{% endblock %}

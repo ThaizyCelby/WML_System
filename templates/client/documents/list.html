@@ -1,0 +1,92 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Documents{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-brand-950 dark:text-white">My documents</h1>
+  <a href="{% url 'client_document_upload' %}" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Upload document</a>
+</div>
+
+{% if documents %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr>
+          <th class="px-5 py-3">Type</th>
+          <th class="px-5 py-3">Filename</th>
+          <th class="px-5 py-3">Uploaded</th>
+          <th class="px-5 py-3">Status</th>
+          <th class="px-5 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for d in documents %}
+        <tr>
+          <td class="px-5 py-3">
+            {{ d.document_type }}
+            {% if d.versions.count > 1 %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium">
+                v{{ d.versions.count }}
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3">{{ d.original_filename }}</td>
+          <td class="px-5 py-3 font-mono text-xs">{{ d.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="px-5 py-3">
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if d.status == 'approved' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif d.status == 'submitted' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+              {% elif d.status == 'awaiting_reupload' %}bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300
+              {% elif d.status == 'rejected' or d.status == 'quarantined' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+              {{ d.get_status_display }}
+            </span>
+
+            {% with latest=d.replacement_requests.first %}
+              {% if latest %}
+                {% if latest.status == 'pending' %}
+                  <span class="ml-2 inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 px-2 py-0.5 text-[10px] font-medium">
+                    Correction requested
+                  </span>
+                {% elif latest.status == 'approved' %}
+                  <span class="ml-2 inline-flex items-center rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 px-2 py-0.5 text-[10px] font-medium">
+                    Correction approved
+                  </span>
+                {% elif latest.status == 'rejected' %}
+                  <span class="ml-2 inline-flex items-center rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 px-2 py-0.5 text-[10px] font-medium">
+                    Correction rejected
+                  </span>
+                {% endif %}
+              {% endif %}
+            {% endwith %}
+          </td>
+          <td class="px-5 py-3 text-right whitespace-nowrap">
+            {% if d.status == 'approved' %}
+              <a href="{% url 'client_document_list' %}{{ d.id }}/download/" class="text-brand-700 dark:text-brand-300 hover:underline text-sm">Download</a>
+              <a href="{% url 'client_document_list' %}{{ d.id }}/request-replacement/" class="ml-3 text-slate-600 dark:text-slate-400 hover:underline text-sm">Request correction</a>
+            {% elif d.status == 'submitted' %}
+              <span class="text-xs text-slate-500 dark:text-slate-400 italic">Awaiting review</span>
+            {% elif d.status == 'awaiting_reupload' %}
+              <a href="{% url 'client_document_list' %}{{ d.id }}/download/" class="text-brand-700 dark:text-brand-300 hover:underline text-sm">Download</a>
+              <a href="{% url 'client_document_upload' %}?replace={{ d.id }}&type={{ d.document_type }}" class="ml-3 text-emerald-700 dark:text-emerald-300 hover:underline text-sm font-semibold">Upload replacement</a>
+            {% else %}
+              <a href="{% url 'client_document_upload' %}?replace={{ d.id }}&type={{ d.document_type }}" class="text-slate-600 dark:text-slate-400 hover:underline text-sm">Replace</a>
+            {% endif %}
+
+            {% if d.document_type == 'identity_document' or d.document_type == 'id_document' or d.document_type == 'sa_id' or d.document_type == 'passport' %}
+              <a href="{% url 'client_document_list' %}{{ d.id }}/reextract/" class="ml-3 text-slate-600 dark:text-slate-400 hover:underline text-sm">Extract ID</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+  <p class="text-slate-500 dark:text-slate-400">No documents uploaded yet.</p>
+  <a href="{% url 'client_document_upload' %}" class="mt-4 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Upload your first document</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% if error %}
+  <div class="rounded-lg border border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200 p-4 text-sm">
+    {{ error }}
+  </div>
+{% else %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+  <h3 class="text-lg font-semibold text-brand-950 dark:text-white">Preview</h3>
+
+  <div class="rounded-lg bg-slate-50 dark:bg-slate-950/50 p-4 space-y-2 text-sm">
+    <div class="flex justify-between"><span>Product</span><span class="font-medium">{{ product.name }}</span></div>
+    <div class="flex justify-between"><span>Principal</span><span class="font-mono">R {{ amount|floatformat:2 }}</span></div>
+    <div class="flex justify-between"><span>Interest rate (annual)</span><span class="font-mono">{{ product.interest_rate }}%</span></div>
+    <div class="flex justify-between"><span>Term</span><span class="font-mono">{{ term }} months</span></div>
+    <div class="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2"><span>Total interest</span><span class="font-mono">R {{ repayment.total_interest|floatformat:2 }}</span></div>
+    <div class="flex justify-between"><span>Total repayment</span><span class="font-mono font-semibold">R {{ repayment.total_repayment|floatformat:2 }}</span></div>
+    <div class="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2"><span>Estimated monthly installment</span><span class="font-mono font-semibold">R {{ installment|floatformat:2 }}</span></div>
+  </div>
+
+  <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-4 text-sm">
+    <div class="flex items-center gap-2">
+      <span class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Affordability preview</span>
+      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+        {% if affordability.status == 'AFFORDABLE' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+        {% elif affordability.status == 'BORDERLINE' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+        {% elif affordability.status == 'NOT_AFFORDABLE' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+        {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">{{ affordability.status }}</span>
+    </div>
+    <p class="mt-2 text-slate-600 dark:text-slate-300">{{ affordability.explanation }}</p>
+    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Estimate only. Final interest, fees, and repayment are confirmed on your offer.</p>
+  </div>
+</div>
+{% endif %}

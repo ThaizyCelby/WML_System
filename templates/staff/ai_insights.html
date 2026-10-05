@@ -1,0 +1,157 @@
+{% extends "base_staff.html" %}
+{% block page_title %}AI Insights{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">AI Qualification Insights</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      AI-derived signals from client bank statements and credit reports.
+      Use these to guide your review — the final decision always rests with you.
+    </p>
+  </div>
+
+  <div class="rounded-xl border-2 border-sky-100 dark:border-sky-900/40 bg-sky-50/40 dark:bg-sky-950/10 p-4 text-xs text-sky-800 dark:text-sky-200">
+    <strong>Advisory only.</strong> AI does not approve or reject loans. All figures marked
+    <em>Estimated</em> are AI-generated and informational — verified figures come from
+    documents and the deterministic affordability engine.
+  </div>
+
+  {% if rows %}
+    <div class="space-y-4">
+      {% for row in rows %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+
+        <!-- Header row -->
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-brand-950 dark:text-white">
+              {{ row.client.full_name|default:row.client.email }}
+            </div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">
+              {{ row.client.email }} · statement {{ row.statement.created_at|date:"Y-m-d" }}
+              ({{ row.statement.bank_name|default:"—" }})
+            </div>
+          </div>
+
+          <!-- Recommendation flag -->
+          <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+            {% if row.recommendation.tone == 'emerald' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+            {% elif row.recommendation.tone == 'amber' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+            {% elif row.recommendation.tone == 'rose' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+            {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+            {{ row.recommendation.label }}
+          </span>
+
+          {% if row.application %}
+            <a href="{% url 'staff_applications_list' %}{{ row.application.id }}/"
+               class="text-xs text-brand-700 dark:text-brand-300 hover:underline">
+              Open application →
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Recommendation detail -->
+        <div class="px-5 py-3 bg-slate-50 dark:bg-slate-950/50 text-xs text-slate-600 dark:text-slate-300">
+          {{ row.recommendation.detail }}
+        </div>
+
+        <!-- Three-column analysis grid -->
+        <div class="p-5 grid md:grid-cols-3 gap-4">
+
+          <!-- Payday -->
+          <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">Estimated</span>
+              <h3 class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Payday</h3>
+            </div>
+            {% if row.payday and row.payday.output_data %}
+              <dl class="text-sm space-y-1">
+                {% for k, v in row.payday.output_data.items %}
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ k|cut:"_"|title }}</dt>
+                    <dd class="font-mono text-right break-all text-xs">{{ v }}</dd>
+                  </div>
+                {% endfor %}
+              </dl>
+              <p class="mt-2 text-[10px] text-slate-400">via {{ row.payday.provider }} / {{ row.payday.model_name }}</p>
+            {% else %}
+              <p class="text-xs text-slate-400">No payday analysis yet.</p>
+            {% endif %}
+          </div>
+
+          <!-- Debt -->
+          <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">Estimated</span>
+              <h3 class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Recurring debt</h3>
+            </div>
+            {% if row.debt and row.debt.output_data.creditors %}
+              <ul class="text-xs space-y-1">
+                {% for c in row.debt.output_data.creditors %}
+                  <li class="flex justify-between gap-2">
+                    <span class="truncate">{{ c.creditor_name }}</span>
+                    <span class="font-mono shrink-0">R {{ c.monthly_payment }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+              <p class="mt-2 text-[10px] text-slate-400">via {{ row.debt.provider }} / {{ row.debt.model_name }}</p>
+            {% else %}
+              <p class="text-xs text-slate-400">No debt analysis yet.</p>
+            {% endif %}
+          </div>
+
+          <!-- Credit report -->
+          <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">Verified</span>
+              <h3 class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Credit bureau</h3>
+            </div>
+            {% if row.credit_report %}
+              <dl class="text-xs space-y-1">
+                <div class="flex justify-between"><dt>Bureau</dt><dd>{{ row.credit_report.bureau|upper }}</dd></div>
+                <div class="flex justify-between"><dt>Score</dt><dd class="font-mono">{{ row.credit_report.score|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt>Monthly obligations</dt><dd class="font-mono">R {{ row.credit_report.total_monthly_obligations|floatformat:2 }}</dd></div>
+                <div class="flex justify-between"><dt>Total outstanding</dt><dd class="font-mono">R {{ row.credit_report.total_outstanding_debt|floatformat:2 }}</dd></div>
+                <div class="flex justify-between"><dt>Worst arrears</dt><dd class="font-mono">{{ row.credit_report.worst_arrears_months }} mo</dd></div>
+                <div class="flex justify-between"><dt>Defaults</dt><dd>{{ row.credit_report.has_defaults|yesno:"Yes,No" }}</dd></div>
+              </dl>
+              <p class="mt-2 text-[10px] text-slate-400">expires {{ row.credit_report.expires_at|date:"Y-m-d" }}</p>
+            {% else %}
+              <p class="text-xs text-slate-400">No credit report on file.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Action row -->
+        <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
+          {% if row.application %}
+            <a href="{% url 'staff_applications_list' %}{{ row.application.id }}/"
+               class="rounded-lg bg-brand-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-brand-800">
+              Review application
+            </a>
+          {% endif %}
+          <a href="/staff/assistant/?client={{ row.client.id }}"
+             class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+            Ask assistant about this client
+          </a>
+          <a href="{% url 'client_bank_list' %}{{ row.statement.id }}/"
+             target="_blank"
+             class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+            View raw statement
+          </a>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+      <p class="text-slate-500 dark:text-slate-400">No analysed bank statements yet.</p>
+      <p class="text-xs text-slate-400 mt-2">Once clients upload and analyse their statements, their signals will appear here.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

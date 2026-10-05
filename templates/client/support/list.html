@@ -1,0 +1,73 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Support{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">Support tickets</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Questions, issues, or requests — we're here to help.
+      </p>
+    </div>
+    <a href="{% url 'client_support_create' %}"
+       class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
+      New ticket
+    </a>
+  </div>
+
+  {% if tickets %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <tr>
+              <th class="px-5 py-3">Ticket</th>
+              <th class="px-5 py-3">Subject</th>
+              <th class="px-5 py-3">Category</th>
+              <th class="px-5 py-3">Priority</th>
+              <th class="px-5 py-3">Status</th>
+              <th class="px-5 py-3">Last activity</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for t in tickets %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                <td class="px-5 py-3 font-mono text-xs">
+                  <a href="{% url 'client_support_list' %}{{ t.id }}/" class="text-brand-700 dark:text-brand-300 hover:underline">
+                    #{{ t.id|slice:":8" }}
+                  </a>
+                </td>
+                <td class="px-5 py-3">{{ t.subject }}</td>
+                <td class="px-5 py-3 text-xs">{{ t.get_category_display }}</td>
+                <td class="px-5 py-3">
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold
+                    {% if t.priority == 'urgent' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+                    {% elif t.priority == 'high' %}bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300
+                    {% elif t.priority == 'low' %}bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300
+                    {% else %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300{% endif %}">
+                    {{ t.priority|upper }}
+                  </span>
+                </td>
+                <td class="px-5 py-3 text-xs">{{ t.get_status_display }}</td>
+                <td class="px-5 py-3 font-mono text-xs">
+                  {{ t.last_message_at|date:"Y-m-d H:i" }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+      <p class="text-slate-500 dark:text-slate-400">You don't have any support tickets yet.</p>
+      <a href="{% url 'client_support_create' %}"
+         class="mt-4 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+        Open your first ticket
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{# status values: 'neutral' 'success' 'warning' 'danger' 'info' 'brand' #}
+<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+  {% if status == 'success' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+  {% elif status == 'warning' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+  {% elif status == 'danger' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+  {% elif status == 'info' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+  {% elif status == 'brand' %}bg-brand-50 text-brand-800 dark:bg-brand-900/40 dark:text-brand-100
+  {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+  {{ label }}
+</span>

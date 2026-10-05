@@ -1,0 +1,32 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Payments{% endblock %}
+{% block content %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+  <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+    <h1 class="text-sm font-semibold text-slate-900 dark:text-white">Payment history</h1>
+  </div>
+  {% if payments %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr><th class="px-5 py-3">Date</th><th class="px-5 py-3">Loan</th><th class="px-5 py-3">Amount</th><th class="px-5 py-3">Method</th><th class="px-5 py-3">Reference</th><th class="px-5 py-3">Status</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for p in payments %}
+        <tr>
+          <td class="px-5 py-3 font-mono">{{ p.actual_date }}</td>
+          <td class="px-5 py-3 font-mono text-xs">{{ p.loan_id|slice:":8" }}</td>
+          <td class="px-5 py-3 font-mono">R {{ p.amount|floatformat:2 }}</td>
+          <td class="px-5 py-3">{{ p.get_method_display }}</td>
+          <td class="px-5 py-3 text-xs">{{ p.reference|default:"—" }}</td>
+          <td class="px-5 py-3">{{ p.get_status_display }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">No payments recorded yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

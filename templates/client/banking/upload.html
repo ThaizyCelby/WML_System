@@ -1,0 +1,36 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Upload bank statement{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Upload bank statement</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">We'll analyse your statement to verify income and identify recurring commitments. Your data stays private.</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+    {% csrf_token %}
+
+    <div>
+      <label for="bank_name" class="block text-sm font-medium">Bank</label>
+      <select id="bank_name" name="bank_name" class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+        <option value="">Select your bank…</option>
+        <option>Capitec</option><option>ABSA</option><option>FNB</option>
+        <option>Nedbank</option><option>Standard Bank</option>
+        <option>TymeBank</option><option>Discovery Bank</option><option>African Bank</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="file" class="block text-sm font-medium">PDF bank statement</label>
+      <input id="file" name="file" type="file" accept="application/pdf" required
+             class="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 file:mr-3 file:rounded file:border-0 file:bg-brand-900 file:px-3 file:py-2 file:text-white file:text-sm">
+      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Max 10 MB. PDF only.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit" class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Upload &amp; process</button>
+      <a href="{% url 'client_bank_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

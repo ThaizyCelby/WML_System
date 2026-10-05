@@ -1,0 +1,42 @@
+{% extends "base_staff.html" %}
+{% block page_title %}AI Assistant{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl flex flex-col" style="height: calc(100vh - 12rem);">
+
+  <div class="mb-4">
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Operations Assistant</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Ask about portfolio performance, delinquencies, and lending operations.
+      The assistant uses aggregate data only — it never reveals individual client PII.
+    </p>
+  </div>
+
+  <div id="chat-window"
+       class="flex-1 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5"
+       hx-get="/staff/assistant/{{ conversation.id }}/messages/"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+    <p class="text-sm text-slate-500">Loading conversation…</p>
+  </div>
+
+  <form class="mt-4 flex gap-2"
+        hx-post="/staff/assistant/{{ conversation.id }}/send/"
+        hx-target="#chat-window"
+        hx-swap="innerHTML"
+        hx-on::after-request="this.reset(); document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;">
+    {% csrf_token %}
+    <input name="message" required autocomplete="off" maxlength="2000"
+           placeholder="e.g. What's our current approval rate this month?"
+           class="flex-1 rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950">
+    <button type="submit"
+            class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+      Send
+    </button>
+  </form>
+
+  <p class="mt-2 text-xs text-slate-400">
+    The assistant can make mistakes. Verify important figures with the reports module.
+  </p>
+</div>
+{% endblock %}

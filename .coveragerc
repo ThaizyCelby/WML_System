@@ -1,0 +1,21 @@
+[run]
+source = apps,core,config
+omit =
+    */migrations/*
+    */tests/*
+    */__pycache__/*
+    */venv/*
+    manage.py
+    config/asgi.py
+    config/wsgi.py
+branch = True
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+show_missing = True
+precision = 2

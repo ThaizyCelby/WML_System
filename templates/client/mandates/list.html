@@ -1,0 +1,54 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Debit mandates{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-brand-950 dark:text-white">Debit mandates</h1>
+</div>
+
+{% if mandates %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr>
+          <th class="px-5 py-3">Loan</th>
+          <th class="px-5 py-3">Bank</th>
+          <th class="px-5 py-3">Reference</th>
+          <th class="px-5 py-3">Status</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for m in mandates %}
+        <tr>
+          <td class="px-5 py-3 font-mono text-xs">{{ m.loan_id|slice:":8" }}</td>
+          <td class="px-5 py-3">{{ m.bank_name }} ****{{ m.account_number_last4 }}</td>
+          <td class="px-5 py-3 font-mono text-xs">{{ m.mandate_reference_number|default:"—" }}</td>
+          <td class="px-5 py-3">
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if m.status == 'active' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif m.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% elif m.status == 'pending_review' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+              {{ m.get_status_display }}
+            </span>
+          </td>
+          <td class="px-5 py-3 text-right">
+            <a href="{% url 'client_mandate_detail' m.id %}"
+               class="text-brand-700 dark:text-brand-300 hover:underline text-sm">
+              View
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+  <p class="text-slate-500 dark:text-slate-400">No mandates yet.</p>
+  <p class="text-xs text-slate-400 mt-2">A mandate will be requested once your loan is approved.</p>
+</div>
+{% endif %}
+{% endblock %}

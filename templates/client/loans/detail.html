@@ -1,0 +1,207 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Loan detail{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">Loan {{ loan.id|slice:":8" }}</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        {{ loan.product.name|default:"Loan" }} · {{ loan.get_status_display }}
+      </p>
+    </div>
+    {% if loan.agreement %}
+      <a href="{% url 'client_loan_list' %}{{ loan.id }}/agreement/"
+         class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+        View agreement
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- KPI cards -->
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase">Principal</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">R {{ loan.principal_amount|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase">Interest</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">R {{ loan.total_interest|floatformat:2 }}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ loan.interest_rate }}% annual</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase">Outstanding</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">R {{ loan.outstanding_balance|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 dark:text-slate-400 uppercase">Term</p>
+      <p class="mt-2 text-2xl font-bold text-brand-950 dark:text-white font-mono">{{ loan.term_periods }}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ loan.repayment_frequency }}</p>
+    </div>
+  </div>
+
+  {# ── Debit mandate card (workflow-gated) ─────────────────────── #}
+  {% if loan.status in 'approved,contract_pending,contract_accepted,disbursement_pending,active,overdue' %}
+    {% with mandate=loan.debit_instructions.first application=loan.application %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Debit order mandate</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Authorises Wethu Micro Lenders to collect your repayments.
+            </p>
+          </div>
+          {% if mandate %}
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if mandate.status == 'active' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif mandate.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% elif mandate.status == 'pending_review' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+              {{ mandate.get_status_display }}
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="mt-4">
+          {% if not mandate %}
+            {# ── No mandate yet — enforce the review gates ────── #}
+
+            {% if application.status != 'contract_accepted' %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">
+                Please accept your loan agreement before setting up a debit order.
+              </p>
+              <a href="{% url 'client_loan_list' %}{{ loan.id }}/agreement/"
+                 class="mt-3 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                View agreement
+              </a>
+
+            {% elif not application.contract_verified_by_admin %}
+              <p class="text-sm text-amber-700 dark:text-amber-300">
+                Your signed agreement is being reviewed. You'll be able to set up
+                your debit order once it's approved.
+              </p>
+
+            {% elif not application.documents_reviewed or not application.transactions_reviewed %}
+              <p class="text-sm text-amber-700 dark:text-amber-300">
+                Your documents and bank statement are being reviewed. You'll be
+                notified when you can set up your debit order.
+              </p>
+
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">
+                Set up your debit order to enable automatic repayments.
+              </p>
+              {% if loan.collection_day %}
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Collection day: {{ loan.collection_day }}th of each month
+                </p>
+              {% endif %}
+              <a href="{% url 'client_loan_list' %}{{ loan.id }}/mandate/new/"
+                 class="mt-3 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                Set up debit order
+              </a>
+            {% endif %}
+
+          {% elif mandate.status == 'pending_client' %}
+            <p class="text-sm text-amber-700 dark:text-amber-300">
+              Your banking details are saved. Please sign the mandate to continue.
+            </p>
+            <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/sign/"
+               class="mt-3 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+              Sign mandate
+            </a>
+
+          {% elif mandate.status == 'pending_review' %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">
+              Your mandate is under review. You will be notified once activated.
+            </p>
+            <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/"
+               class="mt-3 inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+              View mandate
+            </a>
+
+          {% elif mandate.status == 'active' %}
+            <dl class="grid sm:grid-cols-3 gap-3 text-sm">
+              <div>
+                <dt class="text-slate-500 dark:text-slate-400">Bank</dt>
+                <dd class="font-medium">{{ mandate.bank_name }}</dd>
+              </div>
+              <div>
+                <dt class="text-slate-500 dark:text-slate-400">Account</dt>
+                <dd class="font-mono">{{ mandate.masked_account }}</dd>
+              </div>
+              <div>
+                <dt class="text-slate-500 dark:text-slate-400">Reference</dt>
+                <dd class="font-mono text-xs">{{ mandate.mandate_reference_number|default:"—" }}</dd>
+              </div>
+            </dl>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/"
+                 class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                View mandate
+              </a>
+              {% if mandate.mandate_pdf_storage_key %}
+                <a href="{% url 'client_mandate_list' %}{{ mandate.id }}/download/"
+                   class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                  Download signed mandate
+                </a>
+              {% endif %}
+            </div>
+
+          {% elif mandate.status == 'rejected' %}
+            <div class="rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 p-3 text-sm text-rose-800 dark:text-rose-200">
+              <strong>Rejected:</strong> {{ mandate.rejection_reason|default:"Please contact support." }}
+            </div>
+            <a href="{% url 'client_loan_list' %}{{ loan.id }}/mandate/new/"
+               class="mt-3 inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+              Re-submit banking details
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endwith %}
+  {% endif %}
+
+  <!-- Repayment schedule -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Repayment schedule</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-5 py-3">#</th>
+            <th class="px-5 py-3">Due date</th>
+            <th class="px-5 py-3 text-right">Principal</th>
+            <th class="px-5 py-3 text-right">Interest</th>
+            <th class="px-5 py-3 text-right">Total</th>
+            <th class="px-5 py-3 text-right">Paid</th>
+            <th class="px-5 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for s in schedule %}
+          <tr class="{% if s.status == 'paid' %}bg-emerald-50/30 dark:bg-emerald-950/10{% elif s.status == 'overdue' %}bg-rose-50/40 dark:bg-rose-950/10{% endif %}">
+            <td class="px-5 py-3 font-mono">{{ s.period_number }}</td>
+            <td class="px-5 py-3 font-mono">{{ s.scheduled_date }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ s.principal_portion|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ s.interest_portion|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono font-semibold">R {{ s.total_amount|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ s.amount_paid|floatformat:2 }}</td>
+            <td class="px-5 py-3">{{ s.get_status_display }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-5 py-8 text-center text-slate-500 dark:text-slate-400">
+              No repayment schedule yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Assistant{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto flex flex-col" style="height: calc(100vh - 12rem);">
+
+    <div class="mb-4">
+        <h1 class="text-xl font-bold text-brand-950 dark:text-white">Wethu Assistant</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Ask about your loans, payments, or the documents we need.
+            The assistant only sees your own data.
+        </p>
+    </div>
+
+    <div id="chat-window"
+         class="flex-1 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
+
+        {% for m in session.messages.all %}
+            {% if m.role == 'user' %}
+                <div class="flex justify-end">
+                    <div class="max-w-[80%] rounded-2xl rounded-br-sm bg-brand-900 text-white px-4 py-2.5 text-sm whitespace-pre-wrap">
+                        {{ m.content }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex justify-start">
+                    <div class="max-w-[85%] rounded-2xl rounded-bl-sm {% if m.is_error %}bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200{% else %}bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100{% endif %} px-4 py-2.5 text-sm whitespace-pre-wrap">
+                        {{ m.content }}
+                    </div>
+                </div>
+            {% endif %}
+        {% empty %}
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-10">
+                Start by asking a question below.
+            </p>
+        {% endfor %}
+
+    </div>
+
+    <form method="post" class="mt-4 flex gap-2" id="chat-form">
+        {% csrf_token %}
+        <input name="message"
+               required
+               autocomplete="off"
+               placeholder="Ask a question…"
+               maxlength="2000"
+               class="flex-1 rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 px-3 py-2 text-sm">
+        <button type="submit"
+                id="send-btn"
+                class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-50">
+            Send
+        </button>
+    </form>
+
+    <p class="mt-2 text-xs text-slate-400">
+        The assistant can make mistakes. Verify important information with support.
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-scroll to the newest message on page load
+    const win = document.getElementById('chat-window');
+    if (win) {
+        win.scrollTop = win.scrollHeight;
+    }
+
+    // Show a "thinking…" indicator while the AI responds
+    const form = document.getElementById('chat-form');
+    const btn = document.getElementById('send-btn');
+    if (form) {
+        form.addEventListener('submit', () => {
+            btn.disabled = true;
+            btn.textContent = 'Thinking…';
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{# Usage: {% include "components/card.html" with title="..." subtitle="..." %} #}
+<section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+  {% if title or subtitle %}
+  <header class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+    {% if title %}<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ title }}</h2>{% endif %}
+    {% if subtitle %}<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ subtitle }}</p>{% endif %}
+  </header>
+  {% endif %}
+  <div class="p-5">{{ slot }}</div>
+</section>

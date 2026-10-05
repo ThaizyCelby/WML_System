@@ -1,0 +1,13 @@
+-r base.txt
+
+# Development
+django-debug-toolbar
+django-extensions
+pytest
+pytest-django
+pytest-cov
+pytest-factoryboy
+factory-boy
+faker
+ipython
+watchdog

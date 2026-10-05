@@ -1,0 +1,20 @@
+{% extends "base_public.html" %}
+{% block title %}FAQ — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
+  <h1 class="text-4xl font-extrabold text-brand-950 dark:text-white">Frequently asked questions</h1>
+
+  <div class="mt-10 space-y-4" x-data="{ open: null }">
+    {% for q in faqs %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <button type="button" @click="open = open === {{ forloop.counter }} ? null : {{ forloop.counter }}"
+              class="w-full flex items-center justify-between gap-4 text-left px-5 py-4" :aria-expanded="open === {{ forloop.counter }}">
+        <span class="font-semibold text-brand-950 dark:text-white">{{ q.question }}</span>
+        <svg :class="open === {{ forloop.counter }} ? 'rotate-180' : ''" class="h-5 w-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div x-show="open === {{ forloop.counter }}" x-cloak class="px-5 pb-4 text-sm text-slate-600 dark:text-slate-300">{{ q.answer }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

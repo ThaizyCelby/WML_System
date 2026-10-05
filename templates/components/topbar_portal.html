@@ -1,0 +1,32 @@
+<header class="sticky top-0 z-20 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+  <div class="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <button @click="open = true" class="lg:hidden p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Open menu">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <h1 class="text-lg font-semibold text-slate-900 dark:text-white">{% block page_title %}Portal{% endblock %}</h1>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button @click="dark = !dark" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle theme">
+        <svg x-show="!dark" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <svg x-show="dark" x-cloak class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
+
+      <a href="/portal/notifications/" class="relative p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Notifications">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        {% if unread_count %}
+          <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] h-4 min-w-4 px-1">{{ unread_count }}</span>
+        {% endif %}
+      </a>
+
+      <div class="hidden sm:flex items-center gap-2 pl-3 ml-2 border-l border-slate-200 dark:border-slate-800">
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ user.full_name|default:user.email }}</span>
+        <form method="post" action="/logout/">
+          {% csrf_token %}
+          <button type="submit" class="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400">Sign out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>

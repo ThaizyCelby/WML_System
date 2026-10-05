@@ -1,0 +1,44 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual env
+venv/
+.venv/
+env/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3.*
+db.sqlite3.bak
+media/
+staticfiles/
+logs/
+
+# Secrets — CRITICAL
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups / scratch
+templates.bak/
+*.bak

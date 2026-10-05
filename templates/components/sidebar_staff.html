@@ -1,0 +1,39 @@
+<aside x-cloak :class="open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+       class="fixed inset-y-0 left-0 z-40 w-72 transform transition-transform bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+  <div class="flex h-16 items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
+    <a href="/staff/" class="flex items-center gap-2 font-bold text-brand-900 dark:text-white">
+      {% include "components/logo.html" %}
+      <span>{{ SITE_SHORT_NAME }} Staff</span>
+    </a>
+    <button @click="open = false" class="lg:hidden p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close menu">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <nav class="px-3 py-4 space-y-1 text-sm overflow-y-auto" style="max-height:calc(100vh - 4rem);">
+    {% with current=request.resolver_match.url_name %}
+      {% include "components/sidebar_link.html" with url="/staff/" icon="home" label="Dashboard" match="staff_dashboard" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/ai-insights/" icon="sparkles" label="AI Insights" match="staff_ai" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/assistant/" icon="chat" label="AI Assistant" match="staff_chat" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/applications/" icon="briefcase" label="Applications" match="staff_application" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/kyc/" icon="document" label="KYC Review" match="staff_kyc" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/documents/" icon="document" label="Documents" match="staff_documents" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/mandates/" icon="credit-card" label="Debit Mandates" match="staff_mandate" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/loans/" icon="banknotes" label="Loans" match="staff_loan" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/payments/retry-queue/" icon="credit-card" label="Retry Queue" match="staff_retry" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/collections/" icon="bell" label="Collections" match="staff_collections" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/reconciliation/" icon="sparkles" label="Reconciliation" match="staff_reconciliation" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/fraud/" icon="chat" label="Fraud Alerts" match="staff_fraud" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/compliance/" icon="document" label="Compliance" match="staff_compliance" current=current %}
+      {% include "components/sidebar_link.html" with url="/staff/audit/" icon="user" label="Audit Log" match="staff_audit" current=current %}
+    {% endwith %}
+
+    <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+      <a href="/portal/" class="flex items-center gap-3 px-3 py-2 rounded-md font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to client portal
+      </a>
+    </div>
+  </nav>
+</aside>
+<div x-show="open" x-cloak @click="open = false" class="lg:hidden fixed inset-0 z-30 bg-black/40"></div>

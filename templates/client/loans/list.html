@@ -1,0 +1,88 @@
+{% extends "base_portal.html" %}
+{% block page_title %}My loans{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-brand-950 dark:text-white">My loans</h1>
+  <a href="{% url 'client_loan_apply' %}" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Apply for a loan</a>
+</div>
+
+<!-- Applications in progress -->
+{% if applications %}
+<div class="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+  <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Applications in progress</h2>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr>
+          <th class="px-5 py-3">Application</th>
+          <th class="px-5 py-3">Product</th>
+          <th class="px-5 py-3">Amount</th>
+          <th class="px-5 py-3">Term</th>
+          <th class="px-5 py-3">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for a in applications %}
+        <tr>
+          <td class="px-5 py-3 font-mono text-xs">{{ a.id|slice:":8" }}</td>
+          <td class="px-5 py-3">{{ a.product.name|default:"—" }}</td>
+          <td class="px-5 py-3 font-mono">R {{ a.requested_amount|floatformat:2 }}</td>
+          <td class="px-5 py-3 font-mono">{{ a.requested_term }} mo</td>
+          <td class="px-5 py-3">
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if a.status in 'approved,contract_pending,contract_accepted,disbursement_pending' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif a.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+              {{ a.get_status_display }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Active loans -->
+{% if loans %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+  <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Your loans</h2>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <tr>
+          <th class="px-5 py-3">Loan</th>
+          <th class="px-5 py-3">Principal</th>
+          <th class="px-5 py-3">Outstanding</th>
+          <th class="px-5 py-3">Status</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for l in loans %}
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+          <td class="px-5 py-3 font-mono text-xs">{{ l.id|slice:":8" }}</td>
+          <td class="px-5 py-3 font-mono">R {{ l.principal_amount|floatformat:2 }}</td>
+          <td class="px-5 py-3 font-mono">R {{ l.outstanding_balance|floatformat:2 }}</td>
+          <td class="px-5 py-3">{{ l.get_status_display }}</td>
+          <td class="px-5 py-3"><a href="{% url 'client_loan_list' %}{{ l.id }}/" class="text-brand-700 dark:text-brand-300 hover:underline">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif not applications %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+  <p class="text-slate-500 dark:text-slate-400">You haven't applied for a loan yet.</p>
+  <a href="{% url 'client_loan_apply' %}" class="mt-4 inline-flex items-center rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Start an application</a>
+</div>
+{% endif %}
+
+{% endblock %}

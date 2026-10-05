@@ -1,0 +1,67 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Collections{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div class="grid sm:grid-cols-5 gap-4">
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 uppercase">Total overdue</p>
+      <p class="mt-2 text-xl font-bold font-mono text-rose-600">R {{ total_overdue|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 uppercase">1–30 days</p>
+      <p class="mt-2 text-xl font-bold">{{ buckets.1_30 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 uppercase">31–60</p>
+      <p class="mt-2 text-xl font-bold">{{ buckets.31_60 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 uppercase">61–90</p>
+      <p class="mt-2 text-xl font-bold">{{ buckets.61_90 }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+      <p class="text-xs text-slate-500 uppercase">90+ days</p>
+      <p class="mt-2 text-xl font-bold text-rose-600">{{ buckets.90_plus }}</p>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-950/50 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <tr>
+            <th class="px-5 py-3">Loan</th>
+            <th class="px-5 py-3">Client</th>
+            <th class="px-5 py-3">Due</th>
+            <th class="px-5 py-3 text-right">Amount</th>
+            <th class="px-5 py-3 text-right">Outstanding</th>
+            <th class="px-5 py-3">Days overdue</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% for row in page %}
+          <tr>
+            <td class="px-5 py-3 font-mono text-xs">
+              {% if row.loan_id %}
+                <a href="{% url 'staff_loan_detail' row.loan_id %}" class="text-brand-700 dark:text-brand-300 hover:underline">{{ row.loan_id|slice:":8" }}</a>
+              {% else %}
+                <span class="text-slate-400">—</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3">{{ row.loan.client.email }}</td>
+            <td class="px-5 py-3 font-mono text-xs">{{ row.scheduled_date }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ row.total_amount|floatformat:2 }}</td>
+            <td class="px-5 py-3 text-right font-mono">R {{ row.outstanding|floatformat:2 }}</td>
+            <td class="px-5 py-3 font-mono">{{ row.days_overdue }} days</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="px-5 py-8 text-center text-slate-500">No overdue accounts.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

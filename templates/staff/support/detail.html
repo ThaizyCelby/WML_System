@@ -1,0 +1,110 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Ticket #{{ ticket.id|slice:":8" }}{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-3 gap-6">
+
+  <!-- Main thread -->
+  <div class="lg:col-span-2 space-y-4">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">{{ ticket.subject }}</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        #{{ ticket.id|slice:":8" }} · {{ ticket.client.email }} · {{ ticket.get_category_display }}
+      </p>
+    </div>
+
+    <div class="space-y-3">
+      {% for m in messages %}
+        <div class="rounded-xl border
+          {% if m.is_internal_note %}border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20
+          {% else %}border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900{% endif %} p-4">
+          <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>
+              <strong>{{ m.author.email|default:"system" }}</strong>
+              {% if m.is_internal_note %}
+                · <span class="text-amber-700 dark:text-amber-300 font-semibold">INTERNAL NOTE</span>
+              {% else %}
+                · {{ m.get_role_display }}
+              {% endif %}
+            </span>
+            <span class="font-mono">{{ m.created_at|date:"Y-m-d H:i" }}</span>
+          </div>
+          <div class="mt-2 text-sm whitespace-pre-wrap">{{ m.body }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if ticket.is_open %}
+      <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reply">
+        <label class="block text-sm font-medium">Reply to client</label>
+        <textarea name="body" rows="4" required maxlength="5000"
+                  class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950"></textarea>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="is_internal_note"
+                 class="rounded border-slate-300 text-brand-700 focus:ring-brand-500">
+          Internal note (hidden from client)
+        </label>
+        <button type="submit"
+                class="rounded-lg bg-brand-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+          Send
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar: actions -->
+  <aside class="space-y-4 lg:sticky lg:top-20 lg:self-start">
+
+    <!-- Details -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+      <div class="flex justify-between"><span class="text-slate-500">Status</span><span>{{ ticket.get_status_display }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Priority</span><span>{{ ticket.priority|upper }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Assigned</span><span>{{ ticket.assigned_to.email|default:"—" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Opened</span><span class="font-mono text-xs">{{ ticket.created_at|date:"Y-m-d H:i" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">First response due</span><span class="font-mono text-xs">{{ ticket.sla_first_response_due|date:"Y-m-d H:i" }}</span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Resolution due</span><span class="font-mono text-xs">{{ ticket.resolution_due|date:"Y-m-d H:i" }}</span></div>
+      {% if ticket.first_response_sla_breached %}
+        <div class="rounded-lg bg-rose-50 text-rose-800 dark:bg-rose-950/30 dark:text-rose-200 text-xs p-2">
+          First-response SLA breached
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Assign -->
+    {% if not ticket.assigned_to %}
+      <form method="post" action="{% url 'staff_support_list' %}{{ ticket.id }}/assign/">
+        {% csrf_token %}
+        <button class="w-full rounded-lg bg-brand-900 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+          Assign to me
+        </button>
+      </form>
+    {% endif %}
+
+    <!-- Transition -->
+    {% if ticket.is_open %}
+      <form method="post" action="{% url 'staff_support_list' %}{{ ticket.id }}/transition/"
+            class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3">
+        {% csrf_token %}
+        <label class="block text-sm font-medium">Move to status</label>
+        <select name="status" required
+                class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+          <option value="">Select…</option>
+          <option value="in_progress">In progress</option>
+          <option value="awaiting_client">Awaiting client</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+        </select>
+        <textarea name="notes" rows="2" placeholder="Internal note (optional)"
+                  class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+        <button type="submit"
+                class="w-full rounded-lg bg-brand-900 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+          Apply
+        </button>
+      </form>
+    {% endif %}
+
+  </aside>
+
+</div>
+{% endblock %}

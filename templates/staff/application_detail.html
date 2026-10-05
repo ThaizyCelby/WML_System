@@ -1,0 +1,599 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Review application{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ═════════════ HEADER ═════════════ -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-brand-950 dark:text-white">
+        {{ application.client.full_name|default:application.client.email }}
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Application {{ application.id|slice:":8" }} · {{ application.product.name|default:"—" }}
+      </p>
+    </div>
+    <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+      {{ application.get_status_display }}
+    </span>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6">
+
+    <!-- ═════════════ LEFT COLUMN ═════════════ -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Application summary -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Application</h2>
+        <div class="grid sm:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div class="text-slate-500 dark:text-slate-400 text-xs uppercase">Requested amount</div>
+            <div class="mt-1 font-mono text-lg font-bold">R {{ application.requested_amount|floatformat:2 }}</div>
+          </div>
+          <div>
+            <div class="text-slate-500 dark:text-slate-400 text-xs uppercase">Term</div>
+            <div class="mt-1 font-mono text-lg font-bold">{{ application.requested_term }} mo</div>
+          </div>
+          <div>
+            <div class="text-slate-500 dark:text-slate-400 text-xs uppercase">Interest rate</div>
+            <div class="mt-1 font-mono text-lg font-bold">{{ application.product.interest_rate }}%</div>
+          </div>
+        </div>
+        {% if application.client_payday %}
+          <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-sm">
+            <span class="text-slate-500 dark:text-slate-400">Client declared payday:</span>
+            <span class="ml-2 font-semibold">{{ application.client_payday }}th of each month</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- KYC profile -->
+      {% if profile %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-brand-950 dark:text-white">KYC profile</h2>
+          <span class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-medium">{{ profile.get_kyc_status_display }}</span>
+        </div>
+        <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">ID number</dt><dd class="font-mono">{{ profile.id_number|default:"—" }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">Date of birth</dt><dd class="font-mono">{{ profile.date_of_birth|date:"Y-m-d"|default:"—" }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">Employment</dt><dd>{{ profile.get_employment_type_display|default:"—" }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">Employer</dt><dd>{{ profile.employer_name|default:"—" }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">Monthly income</dt><dd class="font-mono">R {{ profile.monthly_income|floatformat:2 }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400">Monthly expenses</dt><dd class="font-mono">R {{ profile.monthly_expenses|floatformat:2 }}</dd></div>
+        </dl>
+      </div>
+      {% endif %}
+
+      <!-- Bank accounts -->
+      {% if bank_accounts %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Bank accounts</h2>
+        <div class="space-y-2">
+          {% for acc in bank_accounts %}
+            <div class="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1 text-sm">
+              <div class="flex items-center justify-between gap-2">
+                <div class="font-medium">{{ acc.bank_name }}</div>
+                <div class="flex items-center gap-1">
+                  {% if acc.is_primary %}
+                    <span class="inline-flex items-center rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 px-2 py-0.5 text-[10px] font-bold">PRIMARY</span>
+                  {% endif %}
+                  {% if acc.is_verified %}
+                    <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">VERIFIED</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ acc.masked_number }} · {{ acc.account_type }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">
+                {{ acc.account_holder_name }} · source: {{ acc.get_source_display }}
+              </div>
+              {% if acc.last_seen_at %}
+                <div class="text-[10px] text-slate-400 dark:text-slate-500">
+                  Last seen {{ acc.last_seen_at|date:"Y-m-d" }}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Documents -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Documents</h2>
+        {% if documents %}
+        <div class="space-y-2">
+          {% for d in documents %}
+          <div class="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate">{{ d.original_filename }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">{{ d.document_type }} · {{ d.created_at|date:"Y-m-d" }}</div>
+            </div>
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if d.status == 'approved' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+              {% elif d.status == 'submitted' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+              {% elif d.status == 'rejected' %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300
+              {% else %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300{% endif %}">
+              {{ d.get_status_display }}
+            </span>
+            <a href="{% url 'staff_documents_list' %}{{ d.id }}/download/" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">Download</a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No documents uploaded.</p>
+        {% endif %}
+      </div>
+
+      <!-- Bank statement summary -->
+      {% if transaction_summary %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Bank statement ({{ latest_statement.bank_name|default:"—" }})</h2>
+        <div class="grid sm:grid-cols-3 gap-4 text-sm">
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Total credits</dt><dd class="mt-1 font-mono text-lg font-bold text-emerald-600">R {{ transaction_summary.credits|floatformat:2 }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Total debits</dt><dd class="mt-1 font-mono text-lg font-bold text-rose-600">R {{ transaction_summary.debits|floatformat:2 }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Net</dt><dd class="mt-1 font-mono text-lg font-bold">R {{ transaction_summary.net|floatformat:2 }}</dd></div>
+        </div>
+        <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ transaction_summary.count }} transactions extracted.</p>
+      </div>
+      {% endif %}
+
+      <!-- Credit report -->
+      {% if credit_report %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Credit bureau report</h2>
+          <span class="text-xs text-slate-500 dark:text-slate-400">{{ credit_report.bureau|upper }} · expires {{ credit_report.expires_at|date:"Y-m-d" }}</span>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4 text-sm mb-4">
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Score</dt><dd class="mt-1 font-mono text-xl font-bold">{{ credit_report.score|default:"—" }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Monthly obligations</dt><dd class="mt-1 font-mono text-xl font-bold">R {{ credit_report.total_monthly_obligations|floatformat:2 }}</dd></div>
+          <div><dt class="text-xs text-slate-500 dark:text-slate-400 uppercase">Total outstanding</dt><dd class="mt-1 font-mono text-xl font-bold">R {{ credit_report.total_outstanding_debt|floatformat:2 }}</dd></div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Affordability -->
+      {% if affordability %}
+      <div class="rounded-xl border-2 {% if affordability.status == 'AFFORDABLE' %}border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20{% elif affordability.status == 'BORDERLINE' %}border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20{% else %}border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/20{% endif %} p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold">Affordability assessment</h2>
+          <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold bg-white dark:bg-slate-900">
+            {{ affordability.status }}
+          </span>
+        </div>
+        <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div class="flex justify-between"><dt>Gross income</dt><dd class="font-mono">R {{ affordability.gross_income|floatformat:2 }}</dd></div>
+          <div class="flex justify-between"><dt>Living expenses</dt><dd class="font-mono">R {{ affordability.monthly_expenses|floatformat:2 }}</dd></div>
+          <div class="flex justify-between"><dt>Existing debt</dt><dd class="font-mono">R {{ affordability.existing_debt_obligations|floatformat:2 }}</dd></div>
+          <div class="flex justify-between"><dt>Disposable income</dt><dd class="font-mono font-semibold">R {{ affordability.discretionary_income|floatformat:2 }}</dd></div>
+          <div class="flex justify-between"><dt>Proposed repayment</dt><dd class="font-mono">R {{ affordability.proposed_repayment|floatformat:2 }}</dd></div>
+          <div class="flex justify-between"><dt>DTI ratio</dt><dd class="font-mono">{{ affordability.debt_to_income_ratio }}</dd></div>
+          <div class="flex justify-between"><dt>Affordability ratio</dt><dd class="font-mono">{{ affordability.affordability_ratio }}</dd></div>
+          <div class="flex justify-between"><dt>Remaining after repayment</dt><dd class="font-mono font-semibold">R {{ affordability.remaining_after_repayment|floatformat:2 }}</dd></div>
+        </dl>
+        <p class="mt-4 text-xs">{{ affordability.explanation }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Review history -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Review history</h2>
+        {% if events %}
+        <ol class="space-y-3 text-sm">
+          {% for e in events %}
+          <li class="flex gap-3">
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-mono w-32 shrink-0">{{ e.timestamp|date:"Y-m-d H:i" }}</span>
+            <div>
+              <div><span class="font-medium">{{ e.from_status|default:"—" }}</span> → <span class="font-medium">{{ e.to_status }}</span></div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">
+                {% if e.actor %}{{ e.actor.email }}{% else %}system{% endif %}
+                {% if e.notes %} · {{ e.notes }}{% endif %}
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">No events yet.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- ═════════════ RIGHT COLUMN — WORKFLOW ═════════════ -->
+    <aside class="space-y-6 lg:sticky lg:top-20 lg:self-start">
+
+      <!-- ═════════════ POLICY VERDICT ═════════════ -->
+      {% if policy_result %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Policy verdict</h2>
+          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
+            {% if policy_result.verdict == 'eligible' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300
+            {% elif policy_result.verdict == 'conditionally_eligible' %}bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300
+            {% elif policy_result.verdict == 'needs_review' %}bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300
+            {% else %}bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300{% endif %}">
+            {{ policy_result.label|upper }}
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">{{ policy_result.summary }}</p>
+
+        <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+          {% for rule in policy_result.rules %}
+            <div class="flex items-start gap-2 text-xs">
+              <span class="mt-0.5 inline-block w-3 h-3 flex-shrink-0 rounded-full
+                {% if rule.status == 'pass' %}bg-emerald-500
+                {% elif rule.status == 'warn' %}bg-amber-500
+                {% elif rule.status == 'fail' %}bg-rose-500
+                {% elif rule.status == 'skip' %}bg-slate-300 dark:bg-slate-700
+                {% else %}bg-sky-500{% endif %}"></span>
+              <div class="min-w-0">
+                <div class="font-medium text-slate-700 dark:text-slate-200">{{ rule.label }}</div>
+                <div class="text-slate-500 dark:text-slate-400">{{ rule.detail }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500">
+          Policy v{{ policy_result.policy_version }}
+          · Evaluated {{ policy_result.evaluated_at|slice:":16" }}
+          · {{ policy_result.hard_fails }} fail · {{ policy_result.warnings }} warn · {{ policy_result.missing_data }} info
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ═════════════ WORKFLOW ACTIONS ═════════════ -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Workflow actions</h2>
+
+        {% if application.status == 'submitted' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Move the application to the next review stage.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="document_review">
+              <input type="hidden" name="notes" value="Moving to document review">
+              <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                Move to Document Review
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="kyc_review">
+              <input type="hidden" name="notes" value="Skipping to KYC review">
+              <button type="submit" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                Skip to KYC Review
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="rejected">
+              <button type="submit" class="w-full rounded-lg border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 px-4 py-2.5 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30">
+                Reject Application
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'document_review' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Confirm each uploaded document above, then move to KYC review.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="kyc_review">
+              <input type="hidden" name="notes" value="Documents reviewed">
+              <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                Documents Reviewed → KYC Review
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="rejected">
+              <button type="submit" class="w-full rounded-lg border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 px-4 py-2.5 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30">
+                Reject Application
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'kyc_review' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Verify the client's identity in the KYC panel below, then move to affordability.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="affordability_review">
+              <input type="hidden" name="notes" value="KYC verified">
+              <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                KYC Verified → Affordability
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="rejected">
+              <button type="submit" class="w-full rounded-lg border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 px-4 py-2.5 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30">
+                Reject Application
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'affordability_review' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Review the affordability assessment above, then move to credit review.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="credit_review">
+              <input type="hidden" name="notes" value="Affordability checked">
+              <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                Affordability OK → Credit Review
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="rejected">
+              <button type="submit" class="w-full rounded-lg border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 px-4 py-2.5 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30">
+                Reject Application
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'credit_review' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Review the credit bureau report above. Approving makes a formal offer to the client.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="approved">
+              <input type="hidden" name="notes" value="Credit approved">
+              <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">
+                ✓ Approve Application
+              </button>
+            </form>
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="rejected">
+              <button type="submit" class="w-full rounded-lg border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 px-4 py-2.5 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30">
+                Reject Application
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'approved' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Application is approved. Send the contract to generate the loan, schedule, and agreement PDF.
+          </p>
+          <div class="rounded-lg bg-slate-50 dark:bg-slate-950/50 p-3 text-xs text-slate-600 dark:text-slate-300 mb-3">
+            <p class="font-semibold mb-1">This action will:</p>
+            <ul class="list-disc pl-4 space-y-0.5">
+              <li>Create the Loan record</li>
+              <li>Generate the repayment schedule</li>
+              <li>Generate the loan agreement PDF</li>
+              <li>Notify the client to review and accept</li>
+            </ul>
+          </div>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="contract_pending">
+              <input type="hidden" name="notes" value="Contract sent to client">
+              <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                📄 Send Contract to Client
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'contract_pending' %}
+          <div class="rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 p-3 text-xs text-sky-800 dark:text-sky-200">
+            <p class="font-semibold">⏳ Waiting for the client to accept the loan agreement.</p>
+            <p class="mt-1">The client will see the agreement in their portal. They must accept it before we can proceed.</p>
+          </div>
+
+        {% elif application.status == 'contract_accepted' %}
+          {% with mandate=application.loan.debit_instructions.first %}
+            {% if not mandate %}
+              <div class="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 text-xs text-amber-800 dark:text-amber-200 mb-3">
+                <p class="font-semibold">⏳ Waiting for client to set up a debit mandate.</p>
+                <p class="mt-1">The client must sign a debit-order mandate before we can disburse funds.</p>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Once the client signs, the mandate will appear in the <a href="{% url 'staff_mandate_list' %}" class="underline text-brand-700 dark:text-brand-300">mandate queue</a> for your review.
+              </p>
+            {% elif mandate.status == 'pending_review' %}
+              <div class="rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 p-3 text-xs text-sky-800 dark:text-sky-200 mb-3">
+                <p class="font-semibold">✍️ Client has signed the mandate.</p>
+                <p class="mt-1">Review the mandate and activate it before disbursing.</p>
+              </div>
+              <a href="{% url 'staff_mandate_list' %}{{ mandate.id }}/" class="block w-full text-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                Review Mandate
+              </a>
+            {% elif mandate.status == 'active' %}
+              <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 p-3 text-xs text-emerald-800 dark:text-emerald-200 mb-3">
+                <p class="font-semibold">✓ Mandate active.</p>
+                <p class="mt-1">Ready to disburse funds.</p>
+              </div>
+              <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+                {% csrf_token %}
+                <input type="hidden" name="to_status" value="disbursement_pending">
+                <input type="hidden" name="notes" value="Moving to disbursement">
+                <button type="submit" class="w-full rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+                  Move to Disbursement
+                </button>
+              </form>
+            {% elif mandate.status == 'rejected' %}
+              <div class="rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 p-3 text-xs text-rose-800 dark:text-rose-200">
+                <p class="font-semibold">✗ Mandate was rejected.</p>
+                <p class="mt-1">The client will need to re-submit their banking details.</p>
+              </div>
+            {% else %}
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Mandate status: <strong>{{ mandate.get_status_display }}</strong>.
+              </p>
+            {% endif %}
+          {% endwith %}
+
+        {% elif application.status == 'disbursement_pending' %}
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Confirm funds have been disbursed to the client, then mark the loan active.
+          </p>
+          <div class="space-y-2">
+            <form method="post" action="{% url 'staff_applications_list' %}{{ application.id }}/transition/">
+              {% csrf_token %}
+              <input type="hidden" name="to_status" value="active">
+              <input type="hidden" name="notes" value="Funds disbursed">
+              <button type="submit" class="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">
+                ✓ Mark as Active
+              </button>
+            </form>
+          </div>
+
+        {% elif application.status == 'active' %}
+          <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 p-3 text-xs text-emerald-800 dark:text-emerald-200 mb-3">
+            <p class="font-semibold">✓ Loan is active.</p>
+            <p class="mt-1">Repayments will be collected by debit order on the agreed schedule.</p>
+          </div>
+          {% if application.loan_id %}
+            <a href="{% url 'staff_loan_detail' application.loan_id %}" class="block w-full text-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+              View loan details
+            </a>
+          {% else %}
+            <div class="rounded-lg bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-500 text-center">
+              Loan not yet created
+            </div>
+          {% endif %}
+
+        {% elif application.status == 'rejected' %}
+          <div class="rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 p-3 text-xs text-rose-800 dark:text-rose-200">
+            <p class="font-semibold">This application was rejected.</p>
+            <p class="mt-1">The client has been notified.</p>
+          </div>
+
+        {% else %}
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            No actions available at this status ({{ application.get_status_display }}).
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- ═════════════ REVIEW GATES ═════════════ -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">Review gates</h2>
+
+        <form method="post"
+              action="{% url 'staff_applications_list' %}{{ application.id }}/mark-documents-reviewed/"
+              class="flex items-center justify-between gap-3 py-2">
+          {% csrf_token %}
+          <span class="text-sm">
+            Documents reviewed
+            {% if application.documents_reviewed %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-medium">DONE</span>
+            {% else %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 px-2 py-0.5 text-[10px] font-medium">PENDING</span>
+            {% endif %}
+          </span>
+          {% if not application.documents_reviewed %}
+            <input type="hidden" name="reviewed" value="true">
+            <button type="submit" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">Mark reviewed</button>
+          {% endif %}
+        </form>
+
+        <form method="post"
+              action="{% url 'staff_applications_list' %}{{ application.id }}/mark-transactions-reviewed/"
+              class="flex items-center justify-between gap-3 py-2 border-t border-slate-100 dark:border-slate-800">
+          {% csrf_token %}
+          <span class="text-sm">
+            Transactions reviewed
+            {% if application.transactions_reviewed %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-medium">DONE</span>
+            {% else %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 px-2 py-0.5 text-[10px] font-medium">PENDING</span>
+            {% endif %}
+          </span>
+          {% if not application.transactions_reviewed %}
+            <input type="hidden" name="reviewed" value="true">
+            <button type="submit" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">Mark reviewed</button>
+          {% endif %}
+        </form>
+
+        <form method="post"
+              action="{% url 'staff_applications_list' %}{{ application.id }}/verify-contract/"
+              class="flex items-center justify-between gap-3 py-2 border-t border-slate-100 dark:border-slate-800">
+          {% csrf_token %}
+          <span class="text-sm">
+            Contract verified
+            {% if application.contract_verified_by_admin %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-medium">DONE</span>
+            {% else %}
+              <span class="ml-2 inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 px-2 py-0.5 text-[10px] font-medium">PENDING</span>
+            {% endif %}
+          </span>
+          {% if not application.contract_verified_by_admin %}
+            <button type="submit" class="text-xs text-brand-700 dark:text-brand-300 hover:underline">Verify</button>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- ═════════════ COLLECTION DAY ═════════════ -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white">Collection day</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Client declared payday:
+          <strong>{% if application.client_payday %}{{ application.client_payday }}th{% else %}not set{% endif %}</strong>
+        </p>
+
+        {% if application.loan_id %}
+          <form method="post" action="{% url 'staff_loan_set_collection_day' application.loan_id %}" class="space-y-3">
+            {% csrf_token %}
+            <input type="number" name="collection_day" min="1" max="31" required
+                   value="{{ application.loan.collection_day|default:application.client_payday }}"
+                   placeholder="e.g. 25"
+                   class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+            <button type="submit"
+                    class="w-full rounded-lg bg-brand-900 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">
+              Set collection day
+            </button>
+          </form>
+        {% else %}
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Loan not yet created. Collection day will be settable once the contract has been sent (status → contract_pending).
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- ═════════════ KYC QUICK ACTION ═════════════ -->
+      {% if profile %}
+      <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <h2 class="text-sm font-semibold text-brand-950 dark:text-white mb-4">KYC action</h2>
+        <form method="post" action="/staff/kyc/{{ profile.id }}/action/" class="space-y-3">
+          {% csrf_token %}
+          <select name="action" required class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm">
+            <option value="">Select…</option>
+            <option value="start_review">Start review</option>
+            <option value="approve">Verify KYC</option>
+            <option value="request_info">Request more info</option>
+            <option value="reject">Reject KYC</option>
+            <option value="suspend">Suspend KYC</option>
+          </select>
+          <textarea name="notes" rows="2" placeholder="Notes" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+          <button type="submit" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+            Apply KYC action
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+    </aside>
+  </div>
+
+</div>
+{% endblock %}

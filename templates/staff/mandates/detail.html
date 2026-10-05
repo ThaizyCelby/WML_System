@@ -1,0 +1,48 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Mandate review{% endblock %}
+{% block content %}
+<div class="max-w-3xl space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Mandate {{ mandate.mandate_reference_number|default:mandate.id|slice:":8" }}</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Loan {{ mandate.loan_id|slice:":8" }} — {{ mandate.loan.client.email }}</p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-3 text-sm">
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Status</span><span>{{ mandate.get_status_display }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account holder</span><span>{{ mandate.account_holder_name }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Bank</span><span>{{ mandate.bank_name }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Branch</span><span>{{ mandate.branch_code|default:"—" }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account</span><span class="font-mono">****{{ mandate.account_number_last4 }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Account type</span><span>{{ mandate.account_type|title }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Signed at</span><span>{{ mandate.mandate_signed_at|date:"Y-m-d H:i"|default:"—" }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">IP</span><span class="font-mono text-xs">{{ mandate.mandate_ip|default:"—" }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Signature hash</span><span class="font-mono text-xs">{{ mandate.mandate_hash|slice:":24" }}…</span></div>
+  </div>
+
+  <div class="flex gap-3 flex-wrap">
+    {% if mandate.mandate_pdf_storage_key %}
+      <a href="{% url 'staff_mandate_list' %}{{ mandate.id }}/download/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">View signed mandate</a>
+    {% endif %}
+  </div>
+
+  {% if mandate.status == 'pending_review' %}
+    <div class="grid sm:grid-cols-2 gap-4">
+      <form method="post" action="{% url 'staff_mandate_list' %}{{ mandate.id }}/approve/" class="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/10 p-6 space-y-3">
+        {% csrf_token %}
+        <h3 class="font-semibold text-emerald-900 dark:text-emerald-100">Activate mandate</h3>
+        <p class="text-xs text-emerald-800 dark:text-emerald-200">Confirm the banking details and activate this mandate. Scheduled debits will then be submitted automatically.</p>
+        <textarea name="notes" rows="2" placeholder="Review notes (optional)" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+        <button type="submit" class="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">Activate</button>
+      </form>
+
+      <form method="post" action="{% url 'staff_mandate_list' %}{{ mandate.id }}/reject/" class="rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/10 p-6 space-y-3">
+        {% csrf_token %}
+        <h3 class="font-semibold text-rose-900 dark:text-rose-100">Reject mandate</h3>
+        <p class="text-xs text-rose-800 dark:text-rose-200">Reject this mandate. The client will be notified and must resubmit.</p>
+        <textarea name="reason" rows="2" placeholder="Reason (required)" required class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+        <button type="submit" class="rounded-lg bg-rose-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-800">Reject</button>
+      </form>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

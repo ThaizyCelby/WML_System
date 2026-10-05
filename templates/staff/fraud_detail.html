@@ -1,0 +1,68 @@
+{% extends "base_staff.html" %}
+{% block page_title %}Fraud alert{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">{{ alert.alert_type }}</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400">Risk score {{ alert.risk_score }} · {{ alert.severity|upper }}</p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h2 class="text-sm font-semibold mb-3">Summary</h2>
+    <p class="text-sm">{{ alert.summary }}</p>
+    {% if alert.signals %}
+    <ul class="mt-4 space-y-2 text-sm">
+      {% for s in alert.signals %}
+        <li class="flex gap-2"><span class="text-brand-700 dark:text-brand-300">•</span> <span>{{ s.message|default:s }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  {% if alert.ai_analysis %}
+  <div class="rounded-xl border border-sky-200 dark:border-sky-900/40 bg-sky-50 dark:bg-sky-950/20 p-6">
+    <h2 class="text-sm font-semibold mb-2">AI advisory</h2>
+    <pre class="text-xs whitespace-pre-wrap break-all">{{ alert.ai_analysis }}</pre>
+  </div>
+  {% endif %}
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h2 class="text-sm font-semibold mb-3">Related security events (last 30)</h2>
+    <div class="space-y-2 text-sm">
+      {% for e in related_events %}
+      <div class="flex gap-3">
+        <span class="font-mono text-xs text-slate-500 w-32 shrink-0">{{ e.created_at|date:"Y-m-d H:i" }}</span>
+        <span class="flex-1">{{ e.event_type }} · score {{ e.risk_score }} · {{ e.severity }}</span>
+      </div>
+      {% empty %}
+      <p class="text-slate-500">No related events.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if alert.status == 'open' or alert.status == 'investigating' or alert.status == 'escalated' %}
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+    <h2 class="text-sm font-semibold mb-3">Actions</h2>
+    <form method="post" action="{% url 'staff_fraud_list' %}{{ alert.id }}/action/" class="space-y-4">
+      {% csrf_token %}
+      <textarea name="notes" rows="3" placeholder="Notes / findings" class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950 text-sm"></textarea>
+      <div class="flex gap-3 flex-wrap">
+        {% if alert.status == 'open' %}
+        <button name="action" value="assign" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">Assign to me</button>
+        {% endif %}
+        <button name="action" value="resolve" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Resolve</button>
+        <button name="action" value="false_positive" class="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Mark false positive</button>
+        <button name="action" value="escalate" class="rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800">Escalate</button>
+      </div>
+    </form>
+  </div>
+  {% else %}
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-sm">
+    <p class="font-medium">Reviewed by {{ alert.reviewed_by.email|default:"—" }} on {{ alert.reviewed_at|date:"Y-m-d H:i" }}</p>
+    {% if alert.resolution_notes %}<p class="mt-2">{{ alert.resolution_notes }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
