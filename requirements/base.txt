@@ -30,7 +30,7 @@ redis
 # Security
 cryptography
 python-magic
-python-magic-bin
+python-magic
 clamd
 
 # API & Validation
