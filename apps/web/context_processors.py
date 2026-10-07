@@ -30,3 +30,9 @@ def notifications_context(request):
             count = 0
         cache.set(cache_key, count, timeout=30)
     return {'unread_count': count}
+
+def simulation_mode(request):
+    """Expose simulation-mode flag to every template."""
+    return {
+        'WETHU_SIMULATION_MODE': getattr(settings, 'WETHU_SIMULATION_MODE', False),
+    }

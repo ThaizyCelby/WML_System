@@ -117,6 +117,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps.web.context_processors.branding',
                 'apps.web.context_processors.notifications_context',
+                'apps.web.context_processors.simulation_mode',
             ],
         },
     },
@@ -251,6 +252,11 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     'http://127.0.0.1:8000',
     'https://localhost:443',
 ])
+# ─── Simulation mode ─────────────────────────────────────────────
+# When True, the app displays a persistent warning banner indicating
+# that all records are synthetic demonstration data. Never enable in
+# real production. Controlled via WETHU_SIMULATION_MODE in .env.
+WETHU_SIMULATION_MODE = env.bool('WETHU_SIMULATION_MODE', default=False)
 
 # ----------------------------------------------------------------------
 # CORS
