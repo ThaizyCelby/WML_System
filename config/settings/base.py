@@ -16,8 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Environment variables
 env = environ.Env(
-    DEBUG=(bool, True),
-    ALLOWED_HOSTS=(list, ['127.0.0.1:800']),
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
 )
 
