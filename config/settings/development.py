@@ -100,3 +100,15 @@ DEBUG_TOOLBAR_CONFIG = {
         'debug_toolbar.panels.redirects.RedirectsPanel',
     },
 }
+
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+}
+
+# Debug toolbar (optional)
+INTERNAL_IPS = ['127.0.0.1', 'localhost']
+
+# Local dev logging
+LOGGING['loggers']['apps']['level'] = 'DEBUG'
+LOGGING['loggers']['django']['level'] = 'DEBUG'

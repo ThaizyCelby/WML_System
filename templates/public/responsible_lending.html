@@ -1,0 +1,61 @@
+{% extends "base_public.html" %}
+{% block title %}Responsible lending — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 prose dark:prose-invert">
+  <h1>Responsible lending</h1>
+  <p>
+    {{ SITE_NAME }} is committed to lending responsibly. We will never approve
+    a loan we do not believe you can afford to repay.
+  </p>
+
+  <h2>How we assess affordability</h2>
+  <p>Every application is assessed using a deterministic engine that considers:</p>
+  <ul>
+    <li>Your verified gross monthly income.</li>
+    <li>Your essential living expenses.</li>
+    <li>Your existing debt obligations.</li>
+    <li>The proposed monthly repayment.</li>
+    <li>Your disposable income after all of the above.</li>
+  </ul>
+
+  <h2>What we will not do</h2>
+  <ul>
+    <li>We will not approve a loan that leaves you without reasonable
+        disposable income.</li>
+    <li>We will not charge hidden fees or apply retroactive interest changes.</li>
+    <li>We will not use AI as the sole authority for a lending decision.</li>
+    <li>We will not use protected characteristics to discriminate.</li>
+    <li>We will not harass you if you fall behind — we will work with you.</li>
+  </ul>
+
+  <h2>If you're struggling to repay</h2>
+  <p>
+    Contact us before you miss a payment. We may be able to:
+  </p>
+  <ul>
+    <li>Adjust your collection date within your collection window.</li>
+    <li>Arrange a restructuring or payment plan.</li>
+    <li>Refer you to a registered debt counsellor.</li>
+  </ul>
+  <p>
+    Email <a href="mailto:{{ SITE_SUPPORT_EMAIL }}">{{ SITE_SUPPORT_EMAIL }}</a>
+    or call {{ SITE_SUPPORT_PHONE }}.
+  </p>
+
+  <h2>Over-indebtedness</h2>
+  <p>
+    If you believe you are over-indebted, you have the right under the NCA to
+    apply to a debt counsellor for a formal debt review. We will cooperate
+    fully with that process.
+  </p>
+
+  <h2>Your rights under the NCA</h2>
+  <ul>
+    <li>The right to apply for credit.</li>
+    <li>The right to be given reasons for a credit decision.</li>
+    <li>The right to receive a clear, written quotation before accepting.</li>
+    <li>The right to confidentiality.</li>
+    <li>The right to access and challenge credit records.</li>
+  </ul>
+</section>
+{% endblock %}

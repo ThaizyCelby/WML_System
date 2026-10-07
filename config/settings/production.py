@@ -1,6 +1,8 @@
 from .base import *
+import os
 
 DEBUG = False
+
 
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True

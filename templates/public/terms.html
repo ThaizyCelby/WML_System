@@ -1,0 +1,111 @@
+{% extends "base_public.html" %}
+{% block title %}Terms & conditions — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 prose dark:prose-invert">
+  <h1>Terms &amp; conditions</h1>
+  <p class="text-sm text-slate-500 dark:text-slate-400">
+    Last updated: {% now "j F Y" %}
+  </p>
+
+  <p>
+    These Terms &amp; Conditions govern your use of the {{ SITE_NAME }} platform
+    and any loan you enter into with us. By registering an account you agree
+    to be bound by these terms.
+  </p>
+
+  <h2>1. About us</h2>
+  <p>
+    {{ SITE_NAME }} is a registered credit provider ({{ SITE_COMPANY_REG }})
+    operating in the Republic of South Africa. We are subject to the National
+    Credit Act 34 of 2005 (NCA), the Protection of Personal Information Act 4 of
+    2013 (POPIA), and other applicable laws.
+  </p>
+
+  <h2>2. Eligibility</h2>
+  <ul>
+    <li>You must be at least 18 years old.</li>
+    <li>You must be a South African resident or hold a valid work permit.</li>
+    <li>You must provide accurate, current, and complete information.</li>
+    <li>You must have a valid South African bank account in your own name.</li>
+  </ul>
+
+  <h2>3. Applications and approval</h2>
+  <p>
+    Submitting an application does not guarantee approval. All applications are
+    subject to verification of identity, income, expenses, existing obligations,
+    and a credit check. We may request additional documents before making a
+    decision. Our affordability assessment is performed using a deterministic
+    engine; AI tools assist our reviewers but do not make the decision.
+  </p>
+
+  <h2>4. Interest, fees, and total cost of credit</h2>
+  <p>
+    Interest rates and fees are shown on your loan offer before you accept.
+    The total cost of credit — including interest, origination fees, and any
+    service fees — is disclosed in writing. We do not charge hidden fees.
+  </p>
+
+  <h2>5. Repayment</h2>
+  <p>
+    Repayments are collected by debit order from the bank account you nominate
+    when you set up your debit mandate. You must ensure sufficient funds are
+    available on the agreed collection dates. Missed payments may incur a late
+    payment fee and will be reported to credit bureaus where applicable.
+  </p>
+
+  <h2>6. Cooling-off and early settlement</h2>
+  <p>
+    You may settle your loan early at any time by paying the outstanding
+    principal plus interest accrued up to the settlement date, as provided by
+    the NCA. Where applicable, you have a right to rescind the agreement within
+    the statutory cooling-off period.
+  </p>
+
+  <h2>7. Your obligations</h2>
+  <ul>
+    <li>Keep your contact details and banking information up to date.</li>
+    <li>Notify us immediately of any change in your financial circumstances.</li>
+    <li>Do not use the platform for any unlawful purpose.</li>
+    <li>Do not share your login credentials with anyone.</li>
+  </ul>
+
+  <h2>8. Our rights</h2>
+  <p>
+    We may suspend or close your account if we reasonably believe you have
+    breached these terms, provided false information, or are using the platform
+    fraudulently. We may also report suspected fraud to the relevant authorities.
+  </p>
+
+  <h2>9. Limitation of liability</h2>
+  <p>
+    To the maximum extent permitted by law, {{ SITE_NAME }} is not liable for
+    indirect or consequential loss. Nothing in these terms excludes liability
+    that cannot lawfully be excluded, including under the Consumer Protection
+    Act 68 of 2008.
+  </p>
+
+  <h2>10. Complaints and dispute resolution</h2>
+  <p>
+    If you have a complaint, contact us at
+    <a href="mailto:{{ SITE_SUPPORT_EMAIL }}">{{ SITE_SUPPORT_EMAIL }}</a>.
+    If we cannot resolve it, you may refer the matter to the National Credit
+    Regulator or the National Credit Ombud.
+  </p>
+
+  <h2>11. Governing law</h2>
+  <p>
+    These terms are governed by the laws of the Republic of South Africa.
+  </p>
+
+  <h2>12. Changes to these terms</h2>
+  <p>
+    We may update these terms from time to time. Material changes will be
+    communicated to you in writing before they take effect.
+  </p>
+
+  <p class="text-sm text-slate-500 dark:text-slate-400 mt-8">
+    This is a template. Have a South African attorney review the final wording
+    before going live.
+  </p>
+</section>
+{% endblock %}
