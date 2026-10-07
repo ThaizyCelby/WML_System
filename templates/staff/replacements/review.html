@@ -1,0 +1,62 @@
+{% extends "base_portal.html" %}
+{% block page_title %}Review replacement request{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-xl font-bold text-brand-950 dark:text-white">Review replacement request</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Client: <strong>{{ req.requested_by.email }}</strong>
+    </p>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 text-sm">
+    <div>
+      <div class="text-slate-500 dark:text-slate-400">Document</div>
+      <div class="font-medium">{{ req.document.original_filename }} ({{ req.document.document_type }})</div>
+    </div>
+    <div>
+      <div class="text-slate-500 dark:text-slate-400">Reason from client</div>
+      <div>{{ req.reason|default:"—" }}</div>
+    </div>
+    <div>
+      <div class="text-slate-500 dark:text-slate-400">Requested</div>
+      <div>{{ req.created_at|date:"Y-m-d H:i" }}</div>
+    </div>
+    <div>
+      <div class="text-slate-500 dark:text-slate-400">Status</div>
+      <div>{{ req.get_status_display }}</div>
+    </div>
+  </div>
+
+  {% if req.status == 'pending' %}
+    <form method="post" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label for="notes" class="block text-sm font-medium">Notes (optional)</label>
+        <textarea id="notes" name="notes" rows="3" maxlength="500"
+                  class="mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-950"></textarea>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" name="action" value="approve"
+                class="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+          Approve
+        </button>
+        <button type="submit" name="action" value="reject"
+                class="rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700">
+          Reject
+        </button>
+        <a href="/staff/documents/" class="rounded-lg border border-slate-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+          Cancel
+        </a>
+      </div>
+    </form>
+  {% else %}
+    <div class="rounded-lg bg-slate-100 dark:bg-slate-800 p-4 text-sm">
+      Already {{ req.get_status_display|lower }}
+      {% if req.reviewed_by %} by {{ req.reviewed_by.email }}{% endif %}.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

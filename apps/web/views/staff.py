@@ -12,7 +12,7 @@ from django.http import FileResponse, Http404
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 
 from apps.accounts.models import User, ClientProfile, BankAccount
 from apps.audit.models import AuditLog
@@ -596,7 +596,7 @@ def document_review(request, document_id):
     return redirect(url)
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @login_required
 def replacement_review(request, request_id):
     g = _guard(request, CREDIT_ROLES + ('Compliance Officer',))
@@ -604,6 +604,12 @@ def replacement_review(request, request_id):
         return g
 
     req = get_object_or_404(DocumentReplacementRequest, id=request_id)
+
+    if request.method == 'GET':
+        return render(request, 'staff/replacements/review.html', {
+            'req': req,
+        })
+
     action = request.POST.get('action')
     notes = (request.POST.get('notes') or '')[:500]
 

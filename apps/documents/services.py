@@ -157,7 +157,7 @@ class DocumentService:
                 )
         except Exception as e:
             document.virus_scan_status = 'error'
-            document.status = 'rejected'
+            document.status = 'submitted'
             document.virus_scan_result = str(e)
 
         document.save(update_fields=['virus_scan_status', 'status', 'virus_scan_result', 'updated_at'])

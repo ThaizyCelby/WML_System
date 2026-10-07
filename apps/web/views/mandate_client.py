@@ -34,47 +34,6 @@ def mandate_create(request, loan_id):
     loan = get_object_or_404(Loan, id=loan_id, client=request.user)
     application = loan.application
 
-    try:
-        from apps.accounts.bank_account_service import BankAccountService
-
-        # 1. Persist the bank account as a structured record
-        account, _created = BankAccountService.add_account(
-            client=request.user,
-            bank_name=request.POST['bank_name'],
-            account_holder_name=request.POST['account_holder_name'],
-            account_number=request.POST['account_number'],
-            account_type=request.POST.get('account_type', 'cheque'),
-            branch_code=request.POST.get('branch_code', ''),
-            source='mandate_created',
-            actor=request.user,
-            ip_address=request.META.get('REMOTE_ADDR'),
-        )
-
-        # 2. Create the mandate as before
-        instruction = MandateService.create_mandate(
-            loan=loan,
-            account_holder_name=request.POST['account_holder_name'],
-            account_number=request.POST['account_number'],
-            bank_name=request.POST['bank_name'],
-            branch_code=request.POST.get('branch_code', ''),
-            account_type=request.POST.get('account_type', 'cheque'),
-            signed_by=request.user,
-            ip_address=request.META.get('REMOTE_ADDR'),
-            user_agent=request.META.get('HTTP_USER_AGENT', ''),
-        )
-
-        # 3. Link them
-        BankAccountService.link_to_mandate(account, instruction)
-
-        messages.success(request, 'Banking details saved. Please sign the mandate.')
-        return redirect('client_mandate_sign', mandate_id=instruction.id)
-    except ValueError as e:
-        messages.error(request, str(e))
-    except Exception as e:
-        logger.exception('Mandate creation failed: %s', e)
-        messages.error(request, f'Could not save banking details: {e}')
-
-
     # Gate 1a: contract must be accepted
     if application.status != 'contract_accepted':
         messages.error(
