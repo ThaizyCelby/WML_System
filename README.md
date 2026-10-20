@@ -2,6 +2,14 @@
 
 Secure Django foundation for a digital lending / financial management platform.
 
+Log in as:
+
+Demo staff: demo.staff@demo.wethuml.local / SimWethu#2026!
+
+Good client: demo001@demo.wethuml.local / SimWethu#2026!
+
+Paid loan client: demo010@demo.wethuml.local / SimWethu#2026!
+
 ## Scope
 - Custom User model
 - RBAC role foundation
